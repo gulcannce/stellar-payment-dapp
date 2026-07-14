@@ -50,6 +50,9 @@ Open `http://localhost:5173` in your browser.
 ### Wallet Connected, Balance Displayed & Successful Testnet Transaction
 ![Wallet connected, balance and successful transaction](screenshots/transaction-success.png)
 
+### Transaction History
+![Transaction history](screenshots/transaction-history.png)
+
 ### Freighter Wallet (Testnet)
 ![Freighter wallet](screenshots/freighter-wallet.png)
 
