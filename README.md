@@ -44,11 +44,11 @@ Open `http://localhost:5173` in your browser.
 
 ## 📸 Screenshots
 
-### Wallet Connected & Balance Displayed
-![Wallet connected and balance](screenshots/wallet-connected.png)
+### Wallet Connected, Balance Displayed & Successful Testnet Transaction
+![Wallet connected, balance and successful transaction](screenshots/transaction-success.png)
 
-### Successful Testnet Transaction
-![Successful transaction](screenshots/transaction-success.png)
+### Freighter Wallet (Testnet)
+![Freighter wallet](screenshots/freighter-wallet.png)
 
 ## 🔗 Example Transaction
 
