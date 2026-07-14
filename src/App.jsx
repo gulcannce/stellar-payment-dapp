@@ -17,7 +17,24 @@ function App() {
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState(null); // { type: "success" | "error" | "info", message, hash? }
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const fetchHistory = useCallback(async (pk) => {
+    try {
+      const res = await server
+        .payments()
+        .forAccount(pk)
+        .order("desc")
+        .limit(5)
+        .call();
+      setHistory(
+        res.records.filter((r) => r.type === "payment" || r.type === "create_account")
+      );
+    } catch {
+      setHistory([]);
+    }
+  }, []);
 
   const fetchBalance = useCallback(async (pk) => {
     try {
@@ -54,6 +71,7 @@ function App() {
       const addr = await getAddress();
       setPublicKey(addr.address);
       await fetchBalance(addr.address);
+      await fetchHistory(addr.address);
     } catch (e) {
       setStatus({ type: "error", message: "Bağlantı hatası: " + e.message });
     }
@@ -63,6 +81,7 @@ function App() {
     setPublicKey("");
     setBalance(null);
     setStatus(null);
+    setHistory([]);
   };
 
   const sendPayment = async (e) => {
@@ -109,6 +128,7 @@ function App() {
       setDestination("");
       setAmount("");
       await fetchBalance(publicKey);
+      await fetchHistory(publicKey);
     } catch (err) {
       setStatus({
         type: "error",
@@ -190,6 +210,42 @@ function App() {
               {loading ? "Gönderiliyor..." : "Gönder"}
             </button>
           </form>
+
+          {history.length > 0 && (
+            <div className="card">
+              <h2>🕘 Son İşlemler</h2>
+              <ul className="history">
+                {history.map((h) => {
+                  const isOut = h.from === publicKey || h.funder === publicKey;
+                  const other = isOut
+                    ? h.to || h.account
+                    : h.from || h.funder;
+                  const amt = h.amount || h.starting_balance;
+                  return (
+                    <li key={h.id}>
+                      <span className={isOut ? "out" : "in"}>
+                        {isOut ? "➤ Gönderildi" : "✔ Alındı"}
+                      </span>
+                      <span className="amt">
+                        {isOut ? "-" : "+"}
+                        {Number(amt).toFixed(2)} XLM
+                      </span>
+                      <span className="mono other" title={other}>
+                        {other ? short(other) : ""}
+                      </span>
+                      <a
+                        href={`https://stellar.expert/explorer/testnet/tx/${h.transaction_hash}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        ↗
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </>
       )}
 

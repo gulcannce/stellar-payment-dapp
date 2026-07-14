@@ -4,6 +4,8 @@ A simple payment dApp built on the **Stellar Testnet** for the Rise In "Stellar 
 
 Connect your Freighter wallet, view your XLM balance, and send XLM to any address on the Stellar testnet.
 
+🌐 **Live Demo:** https://gulcannce.github.io/stellar-payment-dapp/
+
 ## ✨ Features
 
 - 🔗 **Wallet Connection** — Connect & disconnect the Freighter wallet
@@ -11,6 +13,7 @@ Connect your Freighter wallet, view your XLM balance, and send XLM to any addres
 - 💸 **Send XLM** — Build, sign (via Freighter) and submit payment transactions on testnet
 - ✅ **Transaction Feedback** — Success/failure state, transaction hash, and a Stellar Expert explorer link
 - 🛡️ **Error Handling** — Clear messages for unfunded accounts, rejected signatures, and failed transactions
+- 🕘 **Transaction History** — Shows the last 5 payments (sent/received) with explorer links
 
 ## 🛠️ Tech Stack
 

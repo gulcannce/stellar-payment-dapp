@@ -175,6 +175,48 @@ input:focus {
   font-size: 0.8rem;
 }
 
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.history .out {
+  color: #ff9f7e;
+}
+
+.history .in {
+  color: #80ff72;
+}
+
+.history .amt {
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.history .other {
+  color: #999;
+  font-size: 0.75rem;
+}
+
+.history a {
+  color: #7ee8fa;
+  text-decoration: none;
+}
+
 footer {
   text-align: center;
   color: #777;
