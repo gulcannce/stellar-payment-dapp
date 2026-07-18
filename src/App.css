@@ -223,3 +223,62 @@ footer {
   font-size: 0.8rem;
   margin-top: 10px;
 }
+
+.badge {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.badge.active {
+  background: rgba(46, 204, 113, 0.2);
+  color: #7ee87e;
+}
+
+.badge.ended {
+  background: rgba(231, 76, 60, 0.2);
+  color: #ff9f7e;
+}
+
+.auction-card h2 {
+  margin: 0;
+}
+
+.auction-highlight {
+  text-align: center;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auction-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #bbb;
+}
+
+.bid-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.bid-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.hint {
+  color: #999;
+  text-align: center;
+  margin: 0;
+}

@@ -1,274 +1,95 @@
-import { useState, useCallback } from "react";
-import {
-  isConnected,
-  requestAccess,
-  getAddress,
-  signTransaction,
-} from "@stellar/freighter-api";
-import * as StellarSdk from "@stellar/stellar-sdk";
+import { useCallback } from "react";
 import "./App.css";
 
-const HORIZON_URL = "https://horizon-testnet.stellar.org";
-const server = new StellarSdk.Horizon.Server(HORIZON_URL);
+import { useWallet } from "./hooks/useWallet";
+import { useBalance } from "./hooks/useBalance";
+import { usePayment } from "./hooks/usePayment";
+import { useAuctionContract } from "./hooks/useAuctionContract";
+import { useAuctionEvents } from "./hooks/useAuctionEvents";
+
+import { WalletConnectButton } from "./components/WalletConnectButton";
+import { BalanceCard } from "./components/BalanceCard";
+import { PaymentForm } from "./components/PaymentForm";
+import { TransactionHistory } from "./components/TransactionHistory";
+import { AuctionCard } from "./components/AuctionCard";
+import { EventFeed } from "./components/EventFeed";
+import { StatusBanner } from "./components/StatusBanner";
 
 function App() {
-  const [publicKey, setPublicKey] = useState("");
-  const [balance, setBalance] = useState(null);
-  const [destination, setDestination] = useState("");
-  const [amount, setAmount] = useState("");
-  const [status, setStatus] = useState(null); // { type: "success" | "error" | "info", message, hash? }
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const wallet = useWallet();
+  const balanceHook = useBalance();
+  const auction = useAuctionContract({
+    address: wallet.address,
+    signTransaction: wallet.signTransaction,
+  });
+  const events = useAuctionEvents();
 
-  const fetchHistory = useCallback(async (pk) => {
+  const refreshAccountData = useCallback(async () => {
+    if (wallet.address) await balanceHook.refresh(wallet.address);
+  }, [wallet.address, balanceHook]);
+
+  const payment = usePayment({
+    address: wallet.address,
+    signTransaction: wallet.signTransaction,
+    onSettled: refreshAccountData,
+  });
+
+  const handleConnect = async () => {
     try {
-      const res = await server
-        .payments()
-        .forAccount(pk)
-        .order("desc")
-        .limit(5)
-        .call();
-      setHistory(
-        res.records.filter((r) => r.type === "payment" || r.type === "create_account")
-      );
+      const addr = await wallet.connect();
+      await balanceHook.refresh(addr);
     } catch {
-      setHistory([]);
-    }
-  }, []);
-
-  const fetchBalance = useCallback(async (pk) => {
-    try {
-      const account = await server.loadAccount(pk);
-      const native = account.balances.find((b) => b.asset_type === "native");
-      setBalance(native ? native.balance : "0");
-    } catch {
-      setBalance("0");
-      setStatus({
-        type: "error",
-        message:
-          "Hesap bulunamadı. Freighter'da Friendbot ile hesabını fonladığından emin ol.",
-      });
-    }
-  }, []);
-
-  const connectWallet = async () => {
-    setStatus(null);
-    try {
-      const connected = await isConnected();
-      if (!connected.isConnected) {
-        setStatus({
-          type: "error",
-          message:
-            "Freighter bulunamadı. Lütfen Freighter eklentisini kur: freighter.app",
-        });
-        return;
-      }
-      const access = await requestAccess();
-      if (access.error) {
-        setStatus({ type: "error", message: "Bağlantı reddedildi." });
-        return;
-      }
-      const addr = await getAddress();
-      setPublicKey(addr.address);
-      await fetchBalance(addr.address);
-      await fetchHistory(addr.address);
-    } catch (e) {
-      setStatus({ type: "error", message: "Bağlantı hatası: " + e.message });
+      // Hata WalletConnectButton'ın altındaki StatusBanner'da gösterilmez çünkü
+      // bağlantı hatası henüz bir "status" state'ine yazılmadı; burada sessiz
+      // geçiyoruz, kullanıcı tekrar deneyebilir. (bkz. useWallet.connect)
     }
   };
 
-  const disconnectWallet = () => {
-    setPublicKey("");
-    setBalance(null);
-    setStatus(null);
-    setHistory([]);
+  const handleDisconnect = async () => {
+    await wallet.disconnect();
+    balanceHook.reset();
   };
-
-  const sendPayment = async (e) => {
-    e.preventDefault();
-    setStatus({ type: "info", message: "İşlem hazırlanıyor..." });
-    setLoading(true);
-    try {
-      const sourceAccount = await server.loadAccount(publicKey);
-      const tx = new StellarSdk.TransactionBuilder(sourceAccount, {
-        fee: StellarSdk.BASE_FEE,
-        networkPassphrase: StellarSdk.Networks.TESTNET,
-      })
-        .addOperation(
-          StellarSdk.Operation.payment({
-            destination: destination.trim(),
-            asset: StellarSdk.Asset.native(),
-            amount: amount,
-          })
-        )
-        .setTimeout(60)
-        .build();
-
-      setStatus({ type: "info", message: "Freighter'da işlemi onayla..." });
-      const signed = await signTransaction(tx.toXDR(), {
-        networkPassphrase: StellarSdk.Networks.TESTNET,
-      });
-      if (signed.error) {
-        throw new Error("İmzalama reddedildi.");
-      }
-
-      setStatus({ type: "info", message: "İşlem gönderiliyor..." });
-      const result = await server.submitTransaction(
-        StellarSdk.TransactionBuilder.fromXDR(
-          signed.signedTxXdr,
-          StellarSdk.Networks.TESTNET
-        )
-      );
-
-      setStatus({
-        type: "success",
-        message: "İşlem başarılı! 🎉",
-        hash: result.hash,
-      });
-      setDestination("");
-      setAmount("");
-      await fetchBalance(publicKey);
-      await fetchHistory(publicKey);
-    } catch (err) {
-      setStatus({
-        type: "error",
-        message:
-          "İşlem başarısız: " +
-          (err?.response?.data?.extras?.result_codes
-            ? JSON.stringify(err.response.data.extras.result_codes)
-            : err.message),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const short = (pk) => pk.slice(0, 6) + "..." + pk.slice(-6);
 
   return (
     <div className="container">
       <header>
-        <h1>🌟 Stellar Payment dApp</h1>
-        <p className="subtitle">Stellar Testnet üzerinde XLM gönder</p>
+        <h1>🌟 Stellar Live Auction dApp</h1>
+        <p className="subtitle">Stellar Testnet üzerinde çoklu cüzdanla açık artırma</p>
       </header>
 
-      {!publicKey ? (
-        <button className="btn primary big" onClick={connectWallet}>
-          🔗 Freighter Cüzdanını Bağla
-        </button>
-      ) : (
+      <div className="card">
+        <WalletConnectButton
+          address={wallet.address}
+          connecting={wallet.connecting}
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
+        />
+        {wallet.address && <BalanceCard balance={balanceHook.balance} onRefresh={() => balanceHook.refresh(wallet.address)} />}
+      </div>
+
+      <AuctionCard
+        state={auction.state}
+        loading={auction.loading}
+        address={wallet.address}
+        balance={balanceHook.balance}
+        submitting={auction.txStatus.phase === "pending"}
+        onBid={auction.bid}
+      />
+      <StatusBanner status={auction.txStatus} />
+
+      <EventFeed events={events} />
+
+      {wallet.address && (
         <>
-          <div className="card">
-            <div className="row">
-              <div>
-                <span className="label">Bağlı Cüzdan</span>
-                <p className="mono" title={publicKey}>{short(publicKey)}</p>
-              </div>
-              <button className="btn secondary" onClick={disconnectWallet}>
-                Bağlantıyı Kes
-              </button>
-            </div>
-            <div className="balance">
-              <span className="label">XLM Bakiyesi</span>
-              <p className="balance-value">
-                {balance === null ? "Yükleniyor..." : `${Number(balance).toFixed(2)} XLM`}
-              </p>
-              <button
-                className="btn secondary small"
-                onClick={() => fetchBalance(publicKey)}
-              >
-                ↻ Yenile
-              </button>
-            </div>
-          </div>
-
-          <form className="card" onSubmit={sendPayment}>
-            <h2>💸 XLM Gönder</h2>
-            <label>
-              Alıcı Adresi
-              <input
-                type="text"
-                placeholder="G..."
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                required
-              />
-            </label>
-            <label>
-              Miktar (XLM)
-              <input
-                type="number"
-                step="0.0000001"
-                min="0.0000001"
-                placeholder="10"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-              />
-            </label>
-            <button className="btn primary" type="submit" disabled={loading}>
-              {loading ? "Gönderiliyor..." : "Gönder"}
-            </button>
-          </form>
-
-          {history.length > 0 && (
-            <div className="card">
-              <h2>🕘 Son İşlemler</h2>
-              <ul className="history">
-                {history.map((h) => {
-                  const isOut = h.from === publicKey || h.funder === publicKey;
-                  const other = isOut
-                    ? h.to || h.account
-                    : h.from || h.funder;
-                  const amt = h.amount || h.starting_balance;
-                  return (
-                    <li key={h.id}>
-                      <span className={isOut ? "out" : "in"}>
-                        {isOut ? "➤ Gönderildi" : "✔ Alındı"}
-                      </span>
-                      <span className="amt">
-                        {isOut ? "-" : "+"}
-                        {Number(amt).toFixed(2)} XLM
-                      </span>
-                      <span className="mono other" title={other}>
-                        {other ? short(other) : ""}
-                      </span>
-                      <a
-                        href={`https://stellar.expert/explorer/testnet/tx/${h.transaction_hash}`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        ↗
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+          <PaymentForm onSend={(dest, amt) => payment.send(dest, amt, balanceHook.balance)} loading={payment.status.phase === "pending"} />
+          <StatusBanner status={payment.status} />
+          <TransactionHistory history={balanceHook.history} publicKey={wallet.address} />
         </>
       )}
 
-      {status && (
-        <div className={`status ${status.type}`}>
-          <p>{status.message}</p>
-          {status.hash && (
-            <p className="mono small-text">
-              Hash: {status.hash}
-              <br />
-              <a
-                href={`https://stellar.expert/explorer/testnet/tx/${status.hash}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Stellar Expert'te görüntüle ↗
-              </a>
-            </p>
-          )}
-        </div>
-      )}
-
-      <footer>Stellar Testnet · Freighter Wallet</footer>
+      <footer>
+        Stellar Testnet · Freighter · xBull · Albedo · Rabet · Lobstr · Hana (StellarWalletsKit)
+      </footer>
     </div>
   );
 }
