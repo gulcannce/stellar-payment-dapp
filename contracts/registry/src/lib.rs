@@ -3,7 +3,7 @@ use soroban_sdk::{contract, contractevent, contractimpl, contracttype, vec, Addr
 
 #[contracttype]
 #[derive(Clone)]
-pub enum DataKey {
+pub enum RegistryDataKey {
     TotalFinalized,
     TotalVolume,
     Recorded(Address),
@@ -52,37 +52,37 @@ impl Contract {
         let already_recorded = env
             .storage()
             .persistent()
-            .get(&DataKey::Recorded(auction.clone()))
+            .get(&RegistryDataKey::Recorded(auction.clone()))
             .unwrap_or(false);
         if already_recorded {
             return;
         }
         env.storage()
             .persistent()
-            .set(&DataKey::Recorded(auction.clone()), &true);
+            .set(&RegistryDataKey::Recorded(auction.clone()), &true);
 
         let total_finalized: u32 = env
             .storage()
             .instance()
-            .get(&DataKey::TotalFinalized)
+            .get(&RegistryDataKey::TotalFinalized)
             .unwrap_or(0);
         let total_volume: i128 = env
             .storage()
             .instance()
-            .get(&DataKey::TotalVolume)
+            .get(&RegistryDataKey::TotalVolume)
             .unwrap_or(0);
 
         env.storage()
             .instance()
-            .set(&DataKey::TotalFinalized, &(total_finalized + 1));
+            .set(&RegistryDataKey::TotalFinalized, &(total_finalized + 1));
         env.storage()
             .instance()
-            .set(&DataKey::TotalVolume, &(total_volume + winning_bid));
+            .set(&RegistryDataKey::TotalVolume, &(total_volume + winning_bid));
 
         let mut recent: Vec<AuctionRecord> = env
             .storage()
             .instance()
-            .get(&DataKey::RecentAuctions)
+            .get(&RegistryDataKey::RecentAuctions)
             .unwrap_or(vec![&env]);
         recent.insert(
             0,
@@ -97,7 +97,7 @@ impl Contract {
         }
         env.storage()
             .instance()
-            .set(&DataKey::RecentAuctions, &recent);
+            .set(&RegistryDataKey::RecentAuctions, &recent);
 
         AuctionRecorded {
             auction,
@@ -113,9 +113,9 @@ impl Contract {
             total_finalized: env
                 .storage()
                 .instance()
-                .get(&DataKey::TotalFinalized)
+                .get(&RegistryDataKey::TotalFinalized)
                 .unwrap_or(0),
-            total_volume: env.storage().instance().get(&DataKey::TotalVolume).unwrap_or(0),
+            total_volume: env.storage().instance().get(&RegistryDataKey::TotalVolume).unwrap_or(0),
         }
     }
 
@@ -123,7 +123,7 @@ impl Contract {
     pub fn get_recent_auctions(env: Env) -> Vec<AuctionRecord> {
         env.storage()
             .instance()
-            .get(&DataKey::RecentAuctions)
+            .get(&RegistryDataKey::RecentAuctions)
             .unwrap_or(vec![&env])
     }
 }

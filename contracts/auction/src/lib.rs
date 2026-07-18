@@ -3,6 +3,15 @@ use soroban_sdk::{
     contract, contracterror, contractevent, contractimpl, contracttype, token, Address, Env,
 };
 
+// Registry contract'ının gerçek implementasyonunu (ve dolayısıyla wasm export'larını)
+// bu binary'ye sızdırmamak için sadece derlenmiş wasm'ından arayüzü içe aktarıyoruz
+// (Client-only). `contracts/registry` bu yüzden auction'ın normal bir Rust bağımlılığı
+// değil, sadece testlerde kullanılan bir dev-dependency'dir.
+mod registry_contract {
+    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/registry.wasm");
+}
+use registry_contract::Client as RegistryClient;
+
 #[contracttype]
 #[derive(Clone)]
 pub enum DataKey {
@@ -13,6 +22,7 @@ pub enum DataKey {
     HighestBidder,
     HighestBid,
     Finalized,
+    Registry,
 }
 
 #[contracterror]
@@ -37,6 +47,7 @@ pub struct AuctionState {
     pub highest_bidder: Option<Address>,
     pub highest_bid: i128,
     pub finalized: bool,
+    pub registry: Address,
 }
 
 #[contractevent]
@@ -59,13 +70,15 @@ pub struct Contract;
 #[contractimpl]
 impl Contract {
     /// Bir defaya mahsus kurulum: satıcı, ödeme yapılacak token (testnet'te native XLM'in
-    /// Stellar Asset Contract'ı), taban teklif ve bitiş zamanı (unix timestamp, saniye).
+    /// Stellar Asset Contract'ı), taban teklif, bitiş zamanı (unix timestamp, saniye) ve
+    /// sonuçlanan açık artırmaların kaydedileceği platform geneli registry contract'ı.
     pub fn initialize(
         env: Env,
         seller: Address,
         token: Address,
         min_bid: i128,
         end_time: u64,
+        registry: Address,
     ) -> Result<(), AuctionError> {
         if env.storage().instance().has(&DataKey::Seller) {
             return Err(AuctionError::AlreadyInitialized);
@@ -78,6 +91,7 @@ impl Contract {
         env.storage().instance().set(&DataKey::EndTime, &end_time);
         env.storage().instance().set(&DataKey::HighestBid, &0i128);
         env.storage().instance().set(&DataKey::Finalized, &false);
+        env.storage().instance().set(&DataKey::Registry, &registry);
 
         Ok(())
     }
@@ -141,6 +155,7 @@ impl Contract {
             highest_bidder: env.storage().instance().get(&DataKey::HighestBidder),
             highest_bid: env.storage().instance().get(&DataKey::HighestBid).unwrap_or(0),
             finalized: env.storage().instance().get(&DataKey::Finalized).unwrap_or(false),
+            registry: env.storage().instance().get(&DataKey::Registry).unwrap(),
         }
     }
 
@@ -166,6 +181,18 @@ impl Contract {
             let token_id: Address = env.storage().instance().get(&DataKey::Token).unwrap();
             let token_client = token::Client::new(&env, &token_id);
             token_client.transfer(&env.current_contract_address(), &seller, &highest_bid);
+
+            // Inter-contract iletişim: sonuçlanan satışı platform geneli registry'e bildir.
+            // `record_finalized_auction` bu contract'ın kendi adresiyle `require_auth()`
+            // çağırır; çağrı zincirinde doğrudan çağıran biz olduğumuz için Soroban bunu
+            // imza gerektirmeden "contract kendi kendini yetkilendiriyor" olarak kabul eder.
+            let registry_id: Address = env.storage().instance().get(&DataKey::Registry).unwrap();
+            let registry_client = RegistryClient::new(&env, &registry_id);
+            registry_client.record_finalized_auction(
+                &env.current_contract_address(),
+                &seller,
+                &highest_bid,
+            );
         }
 
         env.storage().instance().set(&DataKey::Finalized, &true);
