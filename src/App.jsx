@@ -74,6 +74,7 @@ function App() {
         balance={balanceHook.balance}
         submitting={auction.txStatus.phase === "pending"}
         onBid={auction.bid}
+        onFinalize={auction.finalize}
       />
       <StatusBanner status={auction.txStatus} />
 

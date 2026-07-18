@@ -16,6 +16,7 @@ function fromRawState(raw) {
     highestBid: Number(raw.highest_bid) / STROOPS_PER_XLM,
     highestBidder: raw.highest_bidder ?? null,
     finalized: raw.finalized,
+    registry: raw.registry,
   };
 }
 
@@ -70,5 +71,33 @@ export function useAuctionContract({ address, signTransaction }) {
     [address, signTransaction, refresh]
   );
 
-  return { state, loading, txStatus, refresh, bid, contractId: CONTRACT_ID };
+  // Süre dolduktan sonra herkes çağırabilir (permissionless settlement):
+  // en yüksek teklifi satıcıya öder ve registry contract'ına (inter-contract
+  // iletişim) sonucu bildirir.
+  const finalize = useCallback(async () => {
+    setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+    try {
+      if (!address) {
+        throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+      }
+
+      const { hash } = await invokeWithAuth({
+        method: "finalize",
+        scArgs: [],
+        sourcePublicKey: address,
+        signTransaction,
+        onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
+      });
+
+      setTxStatus({ phase: "success", message: "Açık artırma sonuçlandırıldı! 🏁", hash });
+      await refresh();
+      return hash;
+    } catch (err) {
+      const classified = classifyError(err);
+      setTxStatus({ phase: "fail", message: classified.message, errorType: classified.type });
+      throw classified;
+    }
+  }, [address, signTransaction, refresh]);
+
+  return { state, loading, txStatus, refresh, bid, finalize, contractId: CONTRACT_ID };
 }

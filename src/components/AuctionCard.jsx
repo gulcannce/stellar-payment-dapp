@@ -1,7 +1,7 @@
 import { BidForm } from "./BidForm";
 import { shortAddress, formatXlm, formatDateTime, isPast } from "../lib/format";
 
-export function AuctionCard({ state, loading, address, balance, submitting, onBid }) {
+export function AuctionCard({ state, loading, address, balance, submitting, onBid, onFinalize }) {
   if (loading && !state) {
     return (
       <div className="card">
@@ -64,11 +64,22 @@ export function AuctionCard({ state, loading, address, balance, submitting, onBi
         <p className="small-text hint">Teklif verebilmek için önce cüzdanını bağla.</p>
       )}
 
-      {(ended || state.finalized) && (
+      {ended && !state.finalized && (
+        <>
+          <p className="small-text hint">
+            Süre doldu. Herkes sonuçlandırabilir — kazanan bedel satıcıya aktarılır ve platform
+            sicil (registry) contract'ına bildirilir.
+          </p>
+          <button className="btn primary" disabled={!address || submitting} onClick={onFinalize}>
+            {submitting ? "Sonuçlandırılıyor..." : "🏁 Sonuçlandır"}
+          </button>
+        </>
+      )}
+
+      {state.finalized && (
         <p className="small-text hint">
-          {state.finalized
-            ? "Açık artırma sonuçlandı, kazanan bedeli satıcıya aktarıldı."
-            : "Süre doldu, sonuçlanmayı bekliyor."}
+          Açık artırma sonuçlandı, kazanan bedeli satıcıya aktarıldı ve registry contract'ına
+          kaydedildi.
         </p>
       )}
     </div>

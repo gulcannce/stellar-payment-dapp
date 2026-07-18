@@ -7,6 +7,9 @@ function describeEvent(ev) {
   if (ev.kind === "auction_finalized") {
     return `Açık artırma sonuçlandı: kazanan teklif ${formatXlm(ev.winningBid)}`;
   }
+  if (ev.kind === "auction_recorded") {
+    return `📋 Sicile kaydedildi: ${shortAddress(ev.auction)} — ${formatXlm(ev.winningBid)}`;
+  }
   return ev.kind;
 }
 

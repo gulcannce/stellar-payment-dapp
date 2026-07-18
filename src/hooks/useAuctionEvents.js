@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { rpcServer } from "../lib/contractClient";
-import { CONTRACT_ID, STROOPS_PER_XLM } from "../lib/config";
+import { CONTRACT_ID, REGISTRY_ID, STROOPS_PER_XLM } from "../lib/config";
 
 const { scValToNative } = StellarSdk;
 const POLL_INTERVAL_MS = 5000;
@@ -24,7 +24,11 @@ function decodeEvent(ev) {
     bidder: kind === "new_bid" ? topics[1] : undefined,
     amount: kind === "new_bid" ? Number(data.amount) / STROOPS_PER_XLM : undefined,
     winningBid:
-      kind === "auction_finalized" ? Number(data.winning_bid) / STROOPS_PER_XLM : undefined,
+      kind === "auction_finalized" || kind === "auction_recorded"
+        ? Number(data.winning_bid) / STROOPS_PER_XLM
+        : undefined,
+    auction: kind === "auction_recorded" ? topics[1] : undefined,
+    seller: kind === "auction_recorded" ? data.seller : undefined,
   };
 }
 
@@ -43,12 +47,12 @@ export function useAuctionEvents() {
       try {
         const request = cursorRef.current
           ? {
-              filters: [{ type: "contract", contractIds: [CONTRACT_ID] }],
+              filters: [{ type: "contract", contractIds: [CONTRACT_ID, REGISTRY_ID] }],
               cursor: cursorRef.current,
               limit: MAX_EVENTS,
             }
           : {
-              filters: [{ type: "contract", contractIds: [CONTRACT_ID] }],
+              filters: [{ type: "contract", contractIds: [CONTRACT_ID, REGISTRY_ID] }],
               startLedger: undefined,
               limit: MAX_EVENTS,
             };
