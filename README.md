@@ -104,6 +104,9 @@ If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
 ### Connected wallet, balance, and live auction state
 ![Connected wallet and auction state](screenshots/auction-connected.jpg)
 
+### Live bid placed from the frontend (wallet-signed, real-time event feed update)
+![Live bid success](screenshots/live-bid-success.jpg)
+
 ### Level 1 — Wallet Connected, Balance & Successful Transaction
 ![Wallet connected, balance and successful transaction](screenshots/transaction-success.png)
 
@@ -113,7 +116,8 @@ If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
 ## 🔗 Example Transactions
 
 - **Contract deploy:** [`f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19`](https://stellar.expert/explorer/testnet/tx/f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19)
-- **Contract call (`bid`)**, verifiable on Stellar Explorer: [`c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e`](https://stellar.expert/explorer/testnet/tx/c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e)
+- **Contract call (`bid`) via CLI**, verifiable on Stellar Explorer: [`c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e`](https://stellar.expert/explorer/testnet/tx/c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e)
+- **Contract call (`bid`) from the frontend**, wallet-signed via StellarWalletsKit: [`9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738`](https://stellar.expert/explorer/testnet/tx/9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738)
 - **Level 1 payment:** [`4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4`](https://stellar.expert/explorer/testnet/tx/4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4)
 
 ---
