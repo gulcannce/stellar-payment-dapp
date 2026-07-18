@@ -1,17 +1,27 @@
 import { useCallback, useState } from "react";
-import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
-import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
-import { Networks } from "@creit.tech/stellar-wallets-kit";
 import { classifyError } from "../lib/errors";
 
-let kitReady = false;
-function ensureKit() {
-  if (kitReady) return;
-  StellarWalletsKit.init({
-    modules: defaultModules(),
-    network: Networks.TESTNET,
-  });
-  kitReady = true;
+// Level 3: @creit.tech/stellar-wallets-kit (~850kB) sadece kullanıcı "Cüzdan Bağla"ya
+// tıkladığında dinamik olarak yüklenir; ilk sayfa yükünü küçültür.
+let kitModulePromise = null;
+function loadKit() {
+  if (!kitModulePromise) {
+    kitModulePromise = Promise.all([
+      import("@creit.tech/stellar-wallets-kit/sdk"),
+      import("@creit.tech/stellar-wallets-kit/modules/utils"),
+      import("@creit.tech/stellar-wallets-kit"),
+    ]).then(([sdk, utils, root]) => {
+      const { StellarWalletsKit } = sdk;
+      const { defaultModules } = utils;
+      const { Networks } = root;
+      StellarWalletsKit.init({
+        modules: defaultModules(),
+        network: Networks.TESTNET,
+      });
+      return { StellarWalletsKit, Networks };
+    });
+  }
+  return kitModulePromise;
 }
 
 // Level 2: @creit.tech/stellar-wallets-kit ile Freighter, xBull, Albedo, Rabet,
@@ -22,9 +32,9 @@ export function useWallet() {
   const [connecting, setConnecting] = useState(false);
 
   const connect = useCallback(async () => {
-    ensureKit();
     setConnecting(true);
     try {
+      const { StellarWalletsKit } = await loadKit();
       const result = await StellarWalletsKit.authModal();
       setAddress(result.address);
       return result.address;
@@ -36,6 +46,7 @@ export function useWallet() {
   }, []);
 
   const disconnect = useCallback(async () => {
+    const { StellarWalletsKit } = await loadKit();
     await StellarWalletsKit.disconnect();
     setAddress("");
   }, []);
@@ -43,6 +54,7 @@ export function useWallet() {
   const signTransaction = useCallback(
     async (xdr) => {
       try {
+        const { StellarWalletsKit, Networks } = await loadKit();
         const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
           networkPassphrase: Networks.TESTNET,
           address,
