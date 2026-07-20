@@ -78,6 +78,7 @@ export function classifyError(err) {
 // Bakiyeyi zincire hiç göndermeden, işlem ücreti + minimum hesap rezervi için
 // bir tampon bırakarak client-side ön kontrol yapar.
 export function assertSufficientBalance(balanceXlm, amountXlm, { bufferXlm = 1.5 } = {}) {
+  if (balanceXlm == null || amountXlm == null) return;
   const balance = Number(balanceXlm);
   const amount = Number(amountXlm);
   if (!Number.isFinite(balance) || !Number.isFinite(amount)) return;
