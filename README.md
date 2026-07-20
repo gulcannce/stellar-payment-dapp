@@ -122,6 +122,9 @@ If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
 ### Level 1 — Transaction History
 ![Transaction history](screenshots/transaction-history.png)
 
+### Mobile responsive UI (~390px viewport)
+![Mobile responsive view](screenshots/mobile-responsive.jpg)
+
 ## 🔗 Example Transactions
 
 - **Contract deploy:** [`f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19`](https://stellar.expert/explorer/testnet/tx/f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19)
