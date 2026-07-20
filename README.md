@@ -42,6 +42,15 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 26 (Rust) — the auction smart contract
 - Stellar **Testnet** (Horizon: `https://horizon-testnet.stellar.org`, RPC: `https://soroban-testnet.stellar.org`)
 
+## 🤖 AI Usage
+
+This project was built with [Claude Code](https://claude.com/claude-code) (Anthropic) as a pair-programming partner throughout development — every commit in this repo is co-authored with Claude.
+
+- **Smart contract design** — the Soroban `auction` contract (escrow, automatic refund on outbid, `finalize` payout, double-init/double-finalize guards) was designed and implemented together with Claude, including the Rust unit test suite (`cargo test -p auction`).
+- **Frontend integration** — the multi-wallet connect flow, the transaction status machine (`idle → pending → success | fail`), and the real-time Soroban `getEvents` polling feed were built iteratively with Claude, going from a plain payment dApp (Level 1) to the live on-chain auction (Level 2).
+- **Debugging & hardening** — error classification (`wallet-not-found`, `rejected`, `insufficient-balance`), client-side balance/reserve checks, and the production deploy fixes (relative base path, lazy wallet-kit loading, env vars) were worked through with Claude against real testnet transactions.
+- AI was used as an active engineering collaborator, not just for boilerplate — architectural decisions (e.g., escrow-in-contract vs. off-chain settlement, cursor-based event polling vs. websockets) were discussed and reasoned through before implementation.
+
 ## 🚀 Setup & Run Locally
 
 **Prerequisites:**
