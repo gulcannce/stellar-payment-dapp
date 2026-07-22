@@ -152,6 +152,12 @@ If you redeploy, update `CONTRACT_ID` and `REGISTRY_ID` in `src/lib/config.js` (
 ### Auction finalized — registry recorded in the same transaction (Level 3)
 ![Finalize and registry success](screenshots/finalize-registry-success.jpg)
 
+### CI/CD pipeline passing (Level 3)
+![CI pipeline passing](screenshots/ci-pipeline-passing.jpg)
+
+### Test output — 26/26 tests passing across contracts and frontend (Level 3)
+![Test output passing](screenshots/test-output-passing.jpg)
+
 ### Level 1 — Wallet Connected, Balance & Successful Transaction
 ![Wallet connected, balance and successful transaction](screenshots/transaction-success.png)
 
