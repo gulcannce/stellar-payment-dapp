@@ -3,11 +3,19 @@
 A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challenge.
 
 - **Level 1 – White Belt** ✅ *(Approved)* — a payment dApp (Freighter wallet, XLM balance, send XLM, transaction history)
-- **Level 2 – Yellow Belt** — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
+- **Level 2 – Yellow Belt** ✅ *(Approved)* — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
+- **Level 3 – Orange Belt** — adds a second Soroban contract with **inter-contract communication** (the auction reports each finalized sale to a platform-wide registry), a CI/CD pipeline, and a full test suite across both contracts and the frontend.
 
 🌐 **Live Demo:** https://gulcannce.github.io/stellar-payment-dapp/
 
 ## ✨ Features
+
+### Level 3 — Advanced Contracts & Production Readiness
+- 🔗 **Inter-contract communication** — `contracts/auction`'s `finalize()` calls `contracts/registry`'s `record_finalized_auction()` in the same transaction, using contract-to-contract auth (no separate signature needed): the auction authorizes itself as caller, which Soroban accepts as "contract calling as itself"
+- 📊 **Platform-wide registry contract** (`contracts/registry`) — tracks total finalized auctions and total volume across *all* auctions, exposes read-only `get_stats()`, and keeps an idempotency guard so the same auction can never be double-recorded
+- ⚙️ **CI/CD pipeline** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) — every push/PR to `main` runs `npm ci`, `oxlint`, the full Vitest suite, and a production build
+- 🧪 **Frontend test suite** (Vitest + Testing Library) — covers error classification (`src/lib/__tests__/errors.test.js`), formatting helpers (`src/lib/__tests__/format.test.js`), and the bid form component (`src/components/__tests__/BidForm.test.jsx`)
+- 🦀 **Rust unit tests for both contracts** — `cargo test -p auction` and `cargo test -p registry`, including the cross-contract `finalize → record_finalized_auction` flow
 
 ### Level 2 — Live Auction
 - 🔗 **Multi-wallet support** via [StellarWalletsKit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) — Freighter, xBull, Albedo, Rabet, Lobstr, Hana and more, all through one connect flow
@@ -23,23 +31,36 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - 💸 Send XLM to any address, signed via the connected wallet
 - 🕘 Last 5 transactions with Stellar Expert links
 
-## 🏺 Smart Contract
+## 🏺 Smart Contracts
+
+**`contracts/auction`** (Rust / Soroban SDK 26)
 
 | | |
 |---|---|
 | Network | Stellar Testnet |
-| Contract | `contracts/auction` (Rust / Soroban SDK 26) |
-| Contract ID | [`CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV`](https://stellar.expert/explorer/testnet/contract/CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV) |
+| Contract ID (current, Level 3) | [`CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM`](https://stellar.expert/explorer/testnet/contract/CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM) |
 | Payment token | Native XLM (Stellar Asset Contract) `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
-| Functions | `initialize(seller, token, min_bid, end_time)`, `bid(bidder, amount)`, `get_state()`, `finalize()` |
-| Tests | `cargo test -p auction` — covers accepted/rejected bids, automatic refund, finalize payout, double-init/double-finalize guards |
+| Functions | `initialize(seller, token, min_bid, end_time, registry)`, `bid(bidder, amount)`, `get_state()`, `finalize()` |
+| Tests | `cargo test -p auction` — covers accepted/rejected bids, automatic refund, finalize payout, double-init/double-finalize guards, and the cross-contract call to registry on finalize |
+
+**`contracts/registry`** (Rust / Soroban SDK 26) — added in Level 3 for inter-contract communication
+
+| | |
+|---|---|
+| Contract ID | [`CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7`](https://stellar.expert/explorer/testnet/contract/CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7) |
+| Functions | `record_finalized_auction(auction, seller, winning_bid)` — callable only by the auction contract itself (contract-to-contract auth, idempotent per auction address); `get_stats()` — read-only, returns `{ total_finalized, total_volume }` across all auctions |
+| Tests | `cargo test -p registry` — covers stat accumulation and the idempotency guard |
+
+> A first version of the auction contract, [`CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV`](https://stellar.expert/explorer/testnet/contract/CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV), is kept live on testnet as the original Level 2 submission proof (no registry integration).
 
 ## 🛠️ Tech Stack
 
 - [React](https://react.dev) 19 + [Vite](https://vitejs.dev)
 - [`@stellar/stellar-sdk`](https://www.npmjs.com/package/@stellar/stellar-sdk) — Horizon + Soroban RPC, contract invocation, XDR conversion
 - [`@creit.tech/stellar-wallets-kit`](https://www.npmjs.com/package/@creit.tech/stellar-wallets-kit) — multi-wallet connect/sign
-- [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 26 (Rust) — the auction smart contract
+- [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 26 (Rust) — the auction and registry smart contracts
+- [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com) — frontend unit/component tests
+- GitHub Actions — CI pipeline (lint, test, build on every push/PR)
 - Stellar **Testnet** (Horizon: `https://horizon-testnet.stellar.org`, RPC: `https://soroban-testnet.stellar.org`)
 
 ## 🤖 AI Usage
@@ -49,7 +70,8 @@ This project was built with [Claude Code](https://claude.com/claude-code) (Anthr
 - **Smart contract design** — the Soroban `auction` contract (escrow, automatic refund on outbid, `finalize` payout, double-init/double-finalize guards) was designed and implemented together with Claude, including the Rust unit test suite (`cargo test -p auction`).
 - **Frontend integration** — the multi-wallet connect flow, the transaction status machine (`idle → pending → success | fail`), and the real-time Soroban `getEvents` polling feed were built iteratively with Claude, going from a plain payment dApp (Level 1) to the live on-chain auction (Level 2).
 - **Debugging & hardening** — error classification (`wallet-not-found`, `rejected`, `insufficient-balance`), client-side balance/reserve checks, and the production deploy fixes (relative base path, lazy wallet-kit loading, env vars) were worked through with Claude against real testnet transactions.
-- AI was used as an active engineering collaborator, not just for boilerplate — architectural decisions (e.g., escrow-in-contract vs. off-chain settlement, cursor-based event polling vs. websockets) were discussed and reasoned through before implementation.
+- **Inter-contract communication (Level 3)** — the `registry` contract, the contract-to-contract auth pattern in `finalize()`, the idempotency guard, and the CI/CD pipeline were designed and implemented with Claude, along with the Rust test coverage for both contracts and the new frontend Vitest suite.
+- AI was used as an active engineering collaborator, not just for boilerplate — architectural decisions (e.g., escrow-in-contract vs. off-chain settlement, cursor-based event polling vs. websockets, contract-to-contract auth vs. an off-chain indexer for platform stats) were discussed and reasoned through before implementation.
 
 ## 🚀 Setup & Run Locally
 
@@ -69,21 +91,32 @@ Open `http://localhost:5173/stellar-payment-dapp/` in your browser.
 
 **Getting test XLM:** connect your wallet, then fund it with Friendbot (10,000 test XLM).
 
-**Rebuilding/redeploying the contract (optional — a live instance is already deployed):**
+**Rebuilding/redeploying the contracts (optional — live instances are already deployed):**
 
 ```bash
-cd contracts/auction && cargo test          # run unit tests
-cd ../.. && stellar contract build          # -> target/wasm32v1-none/release/auction.wasm
+# registry must be built/deployed first — auction imports its compiled wasm (contractimport!)
+cd contracts/registry && cargo test
+cd ../.. && stellar contract build --package registry
+stellar contract deploy --wasm target/wasm32v1-none/release/registry.wasm \
+  --source <your-key> --network testnet --alias registry
+
+cd contracts/auction && cargo test
+cd ../.. && stellar contract build --package auction
 stellar contract deploy --wasm target/wasm32v1-none/release/auction.wasm \
   --source <your-key> --network testnet --alias auction
 stellar contract invoke --id auction --source <your-key> --network testnet \
   -- initialize --seller <G...> --token CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC \
-  --min_bid 10000000 --end_time <unix-timestamp>
+  --min_bid 10000000 --end_time <unix-timestamp> --registry <registry-contract-id>
 ```
 
-If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
+If you redeploy, update `CONTRACT_ID` and `REGISTRY_ID` in `src/lib/config.js` (or set `VITE_CONTRACT_ID` / `VITE_REGISTRY_ID` at build time).
 
 ## 📖 How to Use
+
+**Finalizing an auction (Level 3):**
+1. Once the auction's end time has passed, call **`finalize()`** (via the frontend or `stellar contract invoke`)
+2. The winning bid is released to the seller, and in the *same transaction* the auction reports the sale to the registry contract
+3. The status banner and live event feed show both effects: "Açık artırma sonuçlandı" and "Sicile kaydedildi" (see screenshot below)
 
 **Live Auction (Level 2):**
 1. Click **"🔗 Cüzdan Bağla"** and pick a wallet (Freighter, xBull, Albedo, ...)
@@ -116,6 +149,9 @@ If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
 ### Live bid placed from the frontend (wallet-signed, real-time event feed update)
 ![Live bid success](screenshots/live-bid-success.jpg)
 
+### Auction finalized — registry recorded in the same transaction (Level 3)
+![Finalize and registry success](screenshots/finalize-registry-success.jpg)
+
 ### Level 1 — Wallet Connected, Balance & Successful Transaction
 ![Wallet connected, balance and successful transaction](screenshots/transaction-success.png)
 
@@ -131,6 +167,7 @@ If you redeploy, update the `CONTRACT_ID` in `src/lib/config.js`.
 - **Contract call (`bid`) via CLI**, verifiable on Stellar Explorer: [`c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e`](https://stellar.expert/explorer/testnet/tx/c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e)
 - **Contract call (`bid`) from the frontend**, wallet-signed via StellarWalletsKit: [`9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738`](https://stellar.expert/explorer/testnet/tx/9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738)
 - **Level 1 payment:** [`4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4`](https://stellar.expert/explorer/testnet/tx/4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4)
+- **`finalize()` with inter-contract call to registry (Level 3)**, from the frontend: [`bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db`](https://stellar.expert/explorer/testnet/tx/bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db)
 
 ---
 
