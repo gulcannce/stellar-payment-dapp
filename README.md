@@ -116,7 +116,7 @@ npm run dev
 
 Open `http://localhost:5173/stellar-payment-dapp/` in your browser.
 
-**Getting test XLM:** connect your wallet, then fund it with Friendbot (10,000 test XLM).
+**Getting test XLM:** connect your wallet, then click the **"🚰 Test XLM Al"** button next to your balance — it calls Friendbot for the connected address automatically (no manual URL to type, which was a common tester stumbling block).
 
 **Rebuilding/redeploying the contracts (optional — live instances are already deployed):**
 

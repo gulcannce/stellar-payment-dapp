@@ -76,6 +76,12 @@ h1 {
   color: #7ee8fa;
 }
 
+.balance-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
 h2 {
   margin: 0;
   font-size: 1.2rem;

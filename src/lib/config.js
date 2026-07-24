@@ -1,6 +1,7 @@
 export const RPC_URL = "https://soroban-testnet.stellar.org";
 export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
+export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 
 // contracts/auction v3 — 24 Temmuz 2026'da demo videosu için yeni bir açık artırma
 // instance'ı deploy edildi (v2'nin süresi dolmuştu). Aynı registry yeniden kullanıldı.

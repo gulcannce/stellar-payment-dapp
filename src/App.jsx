@@ -4,6 +4,7 @@ import "./App.css";
 
 import { useWallet } from "./hooks/useWallet";
 import { useBalance } from "./hooks/useBalance";
+import { useFriendbot } from "./hooks/useFriendbot";
 import { usePayment } from "./hooks/usePayment";
 import { useAuctionContract } from "./hooks/useAuctionContract";
 import { useAuctionEvents } from "./hooks/useAuctionEvents";
@@ -24,6 +25,7 @@ import { FeedbackLink } from "./components/FeedbackLink";
 function App() {
   const wallet = useWallet();
   const balanceHook = useBalance();
+  const friendbot = useFriendbot();
   const auction = useAuctionContract({
     address: wallet.address,
     signTransaction: wallet.signTransaction,
@@ -61,6 +63,11 @@ function App() {
     balanceHook.reset();
   };
 
+  const handleFund = async () => {
+    await friendbot.fund(wallet.address);
+    await balanceHook.refresh(wallet.address);
+  };
+
   return (
     <div className="container">
       <header>
@@ -75,8 +82,16 @@ function App() {
           onConnect={handleConnect}
           onDisconnect={handleDisconnect}
         />
-        {wallet.address && <BalanceCard balance={balanceHook.balance} onRefresh={() => balanceHook.refresh(wallet.address)} />}
+        {wallet.address && (
+          <BalanceCard
+            balance={balanceHook.balance}
+            onRefresh={() => balanceHook.refresh(wallet.address)}
+            onFund={handleFund}
+            funding={friendbot.status.phase === "pending"}
+          />
+        )}
       </div>
+      <StatusBanner status={friendbot.status} />
 
       <AuctionCard
         state={auction.state}
