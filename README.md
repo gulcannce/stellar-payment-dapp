@@ -6,6 +6,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - **Level 2 – Yellow Belt** ✅ *(Approved)* — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
 - **Level 3 – Orange Belt** *(Pending Review)* — adds a second Soroban contract with **inter-contract communication** (the auction reports each finalized sale to a platform-wide registry), a CI/CD pipeline, and a full test suite across both contracts and the frontend.
 - **Level 4 – Green Belt** *(in progress)* — a production-ready **Invoice Tracker MVP** built on the approved Idea Submission (Cross-Border Freelancer Payment & Invoice Tracker): a multi-invoice Soroban contract, analytics/monitoring, and a user feedback loop. Contract deployed to testnet, app deployed to Vercel; real-user onboarding and the demo video are still pending.
+- **Level 5 – Blue Belt** *(not started — prep only)* — scaling to 50+ real testnet users, iterating on the product from their feedback, and preparing a pitch deck + full demo. See [Level 5 — Growth & Product Iteration](#-level-5--growth--product-iteration) below.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
 
@@ -19,7 +20,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - 🧾 **Multi-invoice Soroban contract** (`contracts/invoice`) — unlike the auction's one-contract-per-deal model, a single deployed instance holds many invoices (keyed by id) so new invoices never require a redeploy
 - 🔄 **Full invoice lifecycle** — `create_invoice` → `send_invoice` → `pay_invoice` (direct payer→payee transfer, no escrow) or `cancel_invoice`, with a derived `Overdue` status computed on read (no cron/keeper needed)
 - 📡 **Live invoice status tracking** — the same cursor-based event-polling pattern from Level 2/3, extended to `invoice_created` / `invoice_sent` / `invoice_paid` / `invoice_cancelled` events, merged into one unified "Canlı Olay Akışı"
-- 📈 **Analytics & monitoring** — [Vercel Analytics](https://vercel.com/analytics) tracks custom events (`wallet_connected`, `invoice_created`, `invoice_paid`), doubling as both the required monitoring integration and the proof-of-user-interaction evidence
+- 📈 **Monitoring** — [Vercel Analytics](https://vercel.com/analytics) tracks page views/visitors as basic traffic monitoring; custom event tracking (`wallet_connected`, `invoice_created`, `invoice_paid`) is wired in code but requires a paid Vercel Pro plan to actually collect data, so it's not relied on as proof
+- 🔍 **Proof of user interaction** — the [`contracts/invoice` explorer page](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) on Stellar Expert shows every distinct address that called `create_invoice`/`pay_invoice`, with tx hashes — an on-chain, tamper-proof, free source of truth
 - 📝 **User feedback loop** — an in-app link to a short feedback form, satisfying the "basic user feedback collection" requirement without extra backend infrastructure
 
 ### Level 3 — Advanced Contracts & Production Readiness
@@ -81,7 +83,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - [`@stellar/stellar-sdk`](https://www.npmjs.com/package/@stellar/stellar-sdk) — Horizon + Soroban RPC, contract invocation, XDR conversion
 - [`@creit.tech/stellar-wallets-kit`](https://www.npmjs.com/package/@creit.tech/stellar-wallets-kit) — multi-wallet connect/sign
 - [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 26 (Rust) — the auction, registry, and invoice smart contracts
-- [`@vercel/analytics`](https://www.npmjs.com/package/@vercel/analytics) — production monitoring + custom event tracking (Level 4)
+- [`@vercel/analytics`](https://www.npmjs.com/package/@vercel/analytics) — basic page-view monitoring (Level 4); custom event tracking is wired but inactive on the free plan (see note below)
 - [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com) — frontend unit/component tests
 - GitHub Actions — CI pipeline (lint, test, build on every push/PR)
 - Stellar **Testnet** (Horizon: `https://horizon-testnet.stellar.org`, RPC: `https://soroban-testnet.stellar.org`)
@@ -95,7 +97,7 @@ This project was built with [Claude Code](https://claude.com/claude-code) (Anthr
 - **Frontend integration** — the multi-wallet connect flow, the transaction status machine (`idle → pending → success | fail`), and the real-time Soroban `getEvents` polling feed were built iteratively with Claude, going from a plain payment dApp (Level 1) to the live on-chain auction (Level 2).
 - **Debugging & hardening** — error classification (`wallet-not-found`, `rejected`, `insufficient-balance`), client-side balance/reserve checks, and the production deploy fixes (relative base path, lazy wallet-kit loading, env vars) were worked through with Claude against real testnet transactions.
 - **Inter-contract communication (Level 3)** — the `registry` contract, the contract-to-contract auth pattern in `finalize()`, the idempotency guard, and the CI/CD pipeline were designed and implemented with Claude, along with the Rust test coverage for both contracts and the new frontend Vitest suite.
-- **Invoice Tracker MVP (Level 4)** — the multi-invoice `contracts/invoice` design (single shared instance vs. one-per-deal), the derived-`Overdue`-status approach (avoiding a cron/keeper), the `useInvoiceContract`/`useInvoiceEvents` hooks mirroring the Level 2/3 pattern, and the Vercel Analytics integration (chosen to double as both the monitoring requirement and wallet-interaction proof) were designed and implemented with Claude.
+- **Invoice Tracker MVP (Level 4)** — the multi-invoice `contracts/invoice` design (single shared instance vs. one-per-deal), the derived-`Overdue`-status approach (avoiding a cron/keeper), the `useInvoiceContract`/`useInvoiceEvents` hooks mirroring the Level 2/3 pattern, and the Vercel Analytics integration were designed and implemented with Claude. After deploying, we discovered Vercel's custom event tracking is a Pro-plan-only feature (the Hobby/free plan silently collects nothing), so the wallet-interaction proof strategy was corrected to rely on the on-chain `stellar.expert` contract explorer instead — a stronger, tamper-proof, and free source of truth anyway.
 - AI was used as an active engineering collaborator, not just for boilerplate — architectural decisions (e.g., escrow-in-contract vs. off-chain settlement, cursor-based event polling vs. websockets, contract-to-contract auth vs. an off-chain indexer for platform stats) were discussed and reasoned through before implementation.
 
 ## 🚀 Setup & Run Locally
@@ -186,7 +188,7 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 
 ## 📸 Screenshots
 
-*Level 4 screenshots (invoice creation/payment UI, mobile-responsive invoice view, Vercel Analytics dashboard) will be added here once the invoice contract is deployed and the app has real testnet usage.*
+*Level 4 screenshots (invoice creation/payment UI, mobile-responsive invoice view, and the `contracts/invoice` transaction history on Stellar Expert — the actual proof of user interaction) will be added here once the app has real testnet usage.*
 
 ### Multi-wallet selection (StellarWalletsKit)
 ![Wallet options](screenshots/wallet-options.jpg)
@@ -224,6 +226,22 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 - **Contract call (`bid`) from the frontend**, wallet-signed via StellarWalletsKit: [`9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738`](https://stellar.expert/explorer/testnet/tx/9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738)
 - **Level 1 payment:** [`4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4`](https://stellar.expert/explorer/testnet/tx/4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4)
 - **`finalize()` with inter-contract call to registry (Level 3)**, from the frontend: [`bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db`](https://stellar.expert/explorer/testnet/tx/bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db)
+
+## 🔭 Level 5 — Growth & Product Iteration
+
+*Status: prep only — not yet submitted. This section is scaffolding to be filled in as real users onboard; see the repo's `CLAUDE.md` for the full plan.*
+
+- 🎤 **Pitch deck** — problem, solution, architecture, market opportunity, traction, growth strategy, and roadmap: https://claude.ai/code/artifact/9a2c1e7b-1dea-489b-991d-c651347a51f8
+- 📋 **User onboarding form** — collects name, email, wallet address, and a 1–5 experience rating from each real tester: https://docs.google.com/forms/d/e/1FAIpQLSd1zM7jY7YF9UbcdeMv6QYWieydV8yTK19PzoA3eQDdne27fA/viewform
+- 📊 **Exported responses (Excel)** — *to be linked here once 50+ users have responded and responses are exported from Google Sheets*
+
+### How feedback will shape the next phase
+
+*This subsection is intentionally a template — fill in each row as real feedback comes in, and link the commit that shipped the change.*
+
+| Feedback theme (from users) | Change made | Commit |
+|---|---|---|
+| *(pending real responses)* | — | — |
 
 ---
 
