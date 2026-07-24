@@ -8,6 +8,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 
 🌐 **Live Demo:** https://gulcannce.github.io/stellar-payment-dapp/
 
+🎥 **Demo Video (Level 3):** https://drive.google.com/file/d/1K4hCrloVmJuyr7mVjPr3_ptcyeZObA2m/view?usp=sharing
+
 ## ✨ Features
 
 ### Level 3 — Advanced Contracts & Production Readiness
