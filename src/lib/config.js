@@ -19,6 +19,16 @@ export const REGISTRY_ID =
 export const TOKEN_ID =
   import.meta.env.VITE_TOKEN_ID || "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";
 
+// contracts/invoice (Level 4) — 24 Temmuz 2026'da testnet'e deploy edildi,
+// aynı native XLM token'ıyla initialize edildi.
+export const INVOICE_CONTRACT_ID =
+  import.meta.env.VITE_INVOICE_CONTRACT_ID || "CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI";
+
+// Level 4 kullanıcı geri bildirim formu (Google Form, 24 Temmuz 2026'da oluşturuldu).
+export const FEEDBACK_FORM_URL =
+  import.meta.env.VITE_FEEDBACK_FORM_URL ||
+  "https://docs.google.com/forms/d/e/1FAIpQLSeBVrfm_zY98r8lfZe9aEegB3RpHIxmpYerP17BTstCC0NDaA/viewform";
+
 export const STROOPS_PER_XLM = 10_000_000;
 
 export const explorerTxUrl = (hash) =>

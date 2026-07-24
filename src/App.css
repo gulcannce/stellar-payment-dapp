@@ -111,6 +111,9 @@ input:focus {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.1s, opacity 0.2s;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
 }
 
 .btn:hover {
@@ -241,6 +244,37 @@ footer {
 .badge.ended {
   background: rgba(231, 76, 60, 0.2);
   color: #ff9f7e;
+}
+
+.badge.draft {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ccc;
+}
+
+.badge.cancelled {
+  background: rgba(153, 153, 153, 0.15);
+  color: #999;
+}
+
+.invoice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.invoice-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #ccc;
 }
 
 .auction-card h2 {

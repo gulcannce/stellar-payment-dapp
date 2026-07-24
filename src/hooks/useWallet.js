@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { track } from "@vercel/analytics";
 import { classifyError } from "../lib/errors";
 
 // Level 3: @creit.tech/stellar-wallets-kit (~850kB) sadece kullanıcı "Cüzdan Bağla"ya
@@ -37,6 +38,9 @@ export function useWallet() {
       const { StellarWalletsKit } = await loadKit();
       const result = await StellarWalletsKit.authModal();
       setAddress(result.address);
+      // Level 4: gerçek kullanıcı cüzdan etkileşimi kanıtı (10+ kullanıcı
+      // gereksinimi) — Vercel Analytics dashboard'unda görülebilir.
+      track("wallet_connected");
       return result.address;
     } catch (err) {
       throw classifyError(err);

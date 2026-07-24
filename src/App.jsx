@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
 import { useWallet } from "./hooks/useWallet";
@@ -6,6 +7,8 @@ import { useBalance } from "./hooks/useBalance";
 import { usePayment } from "./hooks/usePayment";
 import { useAuctionContract } from "./hooks/useAuctionContract";
 import { useAuctionEvents } from "./hooks/useAuctionEvents";
+import { useInvoiceContract } from "./hooks/useInvoiceContract";
+import { useInvoiceEvents } from "./hooks/useInvoiceEvents";
 
 import { WalletConnectButton } from "./components/WalletConnectButton";
 import { BalanceCard } from "./components/BalanceCard";
@@ -14,6 +17,9 @@ import { TransactionHistory } from "./components/TransactionHistory";
 import { AuctionCard } from "./components/AuctionCard";
 import { EventFeed } from "./components/EventFeed";
 import { StatusBanner } from "./components/StatusBanner";
+import { InvoiceForm } from "./components/InvoiceForm";
+import { InvoiceList } from "./components/InvoiceList";
+import { FeedbackLink } from "./components/FeedbackLink";
 
 function App() {
   const wallet = useWallet();
@@ -23,6 +29,11 @@ function App() {
     signTransaction: wallet.signTransaction,
   });
   const events = useAuctionEvents();
+  const invoices = useInvoiceContract({
+    address: wallet.address,
+    signTransaction: wallet.signTransaction,
+  });
+  const invoiceEvents = useInvoiceEvents();
 
   const refreshAccountData = useCallback(async () => {
     if (wallet.address) await balanceHook.refresh(wallet.address);
@@ -78,7 +89,29 @@ function App() {
       />
       <StatusBanner status={auction.txStatus} />
 
-      <EventFeed events={events} />
+      {wallet.address && (
+        <div className="card">
+          <h2>🧾 Fatura Oluştur</h2>
+          <InvoiceForm
+            disabled={!wallet.address}
+            submitting={invoices.txStatus.phase === "pending"}
+            onCreate={(payer, amount, dueDate, memo) => invoices.createInvoice(payer, amount, dueDate, memo)}
+          />
+        </div>
+      )}
+      <StatusBanner status={invoices.txStatus} />
+
+      <InvoiceList
+        invoices={invoices.invoices}
+        loading={invoices.loading}
+        address={wallet.address}
+        submitting={invoices.txStatus.phase === "pending"}
+        onSend={invoices.sendInvoice}
+        onPay={(id) => invoices.payInvoice(id, invoices.invoices.find((inv) => inv.id === id)?.amount, balanceHook.balance)}
+        onCancel={invoices.cancelInvoice}
+      />
+
+      <EventFeed events={events} invoiceEvents={invoiceEvents} />
 
       {wallet.address && (
         <>
@@ -88,9 +121,12 @@ function App() {
         </>
       )}
 
+      <FeedbackLink />
+
       <footer>
         Stellar Testnet · Freighter · xBull · Albedo · Rabet · Lobstr · Hana (StellarWalletsKit)
       </footer>
+      <Analytics />
     </div>
   );
 }
