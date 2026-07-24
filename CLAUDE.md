@@ -10,7 +10,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Rise In "Stellar Journey to Mastery" challenge submission'ı. Seviyeler tek bir repo/uygulama üzerinde ilerletiliyor — her level bir öncekinin üzerine inşa ediliyor, eskisi silinmiyor:
 - **Level 1 (Approved):** basit ödeme dApp'ı (Freighter, XLM bakiye/gönderme, işlem geçmişi) — hâlâ uygulamada mevcut.
 - **Level 2 (Approved):** aynı uygulama canlı bir **on-chain açık artırma**ya evrildi — multi-wallet, deploy edilmiş Soroban contract (`contracts/auction`), gerçek zamanlı event senkronizasyonu, açık transaction-status state machine.
-- **Level 3 (aktif, henüz submit edilmedi):** `contracts/registry` eklendi — auction'ın `finalize()`'ı registry'yi çağırıyor (inter-contract iletişim). CI/CD (`.github/workflows/ci.yml`) bu seviyenin bir gereksinimi.
+- **Level 3 (24 Temmuz 2026'da submit edildi, RiseIn'de "Pending Review" — inceleme bekleniyor):** `contracts/registry` eklendi — auction'ın `finalize()`'ı registry'yi çağırıyor (inter-contract iletişim). CI/CD (`.github/workflows/ci.yml`) bu seviyenin bir gereksinimi. README'ye demo video linki (Google Drive) eklendi, submission checklist'i tamamen tamamlandı.
+
+**Demo video için not (24 Temmuz 2026):** O tarihte canlı sitedeki auction'ın (v2, `CCWBM53K...`) süresi dolmuştu; video kaydı için `contracts/auction`'ın **yeni bir instance'ı** (`auction_v3`, adres: `CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25`) aynı registry'yi kullanarak 24 saatlik bir `end_time` ile deploy edildi ve `src/lib/config.js`'deki `CONTRACT_ID` buna güncellendi (gh-pages'e de deploy edildi). Eğer bu auction da süresi dolup "sonuçlanmayı bekliyor" durumuna geçerse, aynı yöntemle (`stellar contract deploy` + `initialize` + config.js güncelle + `npm run build` + `npx gh-pages -d dist`) yeni bir instance açılabilir — README'deki "Example Transactions" tx hash'leri ise daha önceki v2 instance'a ait, hâlâ geçerli kanıt olarak duruyor.
 
 Güncel level durumu ve gereksinimleri için kullanıcının Claude hafızasındaki `stellar-challenge` kaydına bakılabilir; bu dosya kod/mimari odaklıdır, level ilerleme takibi için değildir.
 
