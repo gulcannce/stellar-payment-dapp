@@ -5,7 +5,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - **Level 1 – White Belt** ✅ *(Approved)* — a payment dApp (Freighter wallet, XLM balance, send XLM, transaction history)
 - **Level 2 – Yellow Belt** ✅ *(Approved)* — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
 - **Level 3 – Orange Belt** *(Pending Review)* — adds a second Soroban contract with **inter-contract communication** (the auction reports each finalized sale to a platform-wide registry), a CI/CD pipeline, and a full test suite across both contracts and the frontend.
-- **Level 4 – Green Belt** *(in progress)* — a production-ready **Invoice Tracker MVP** built on the approved Idea Submission (Cross-Border Freelancer Payment & Invoice Tracker): a multi-invoice Soroban contract, analytics/monitoring, and a user feedback loop. Contract deployed to testnet, app deployed to Vercel, demo video recorded; real-user onboarding (10+ wallet interactions) is still pending.
+- **Level 4 – Green Belt** ✅ *(ready for submission)* — a production-ready **Invoice Tracker MVP** built on the approved Idea Submission (Cross-Border Freelancer Payment & Invoice Tracker): a multi-invoice Soroban contract, analytics/monitoring, and a user feedback loop. Contract deployed to testnet, app deployed to Vercel, demo video recorded, **10+ real distinct wallets have created invoices on-chain**, and 12 user feedback responses collected — see [Proof of 10+ User Wallet Interactions](#-proof-of-10-user-wallet-interactions) below.
 - **Level 5 – Blue Belt** *(not started — prep only)* — scaling to 50+ real testnet users, iterating on the product from their feedback, and preparing a pitch deck + full demo. See [Level 5 — Growth & Product Iteration](#-level-5--growth--product-iteration) below.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
@@ -23,8 +23,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - 🔄 **Full invoice lifecycle** — `create_invoice` → `send_invoice` → `pay_invoice` (direct payer→payee transfer, no escrow) or `cancel_invoice`, with a derived `Overdue` status computed on read (no cron/keeper needed)
 - 📡 **Live invoice status tracking** — the same cursor-based event-polling pattern from Level 2/3, extended to `invoice_created` / `invoice_sent` / `invoice_paid` / `invoice_cancelled` events, merged into one unified "Canlı Olay Akışı"
 - 📈 **Monitoring** — [Vercel Analytics](https://vercel.com/analytics) tracks page views/visitors as basic traffic monitoring; custom event tracking (`wallet_connected`, `invoice_created`, `invoice_paid`) is wired in code but requires a paid Vercel Pro plan to actually collect data, so it's not relied on as proof
-- 🔍 **Proof of user interaction** — the [`contracts/invoice` explorer page](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) on Stellar Expert shows every distinct address that called `create_invoice`/`pay_invoice`, with tx hashes — an on-chain, tamper-proof, free source of truth
-- 📝 **User feedback loop** — an in-app link to a short feedback form, satisfying the "basic user feedback collection" requirement without extra backend infrastructure
+- 🔍 **Proof of user interaction** — the [`contracts/invoice` explorer page](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) on Stellar Expert shows every distinct address that called `create_invoice`/`pay_invoice`, with tx hashes — an on-chain, tamper-proof, free source of truth. **10+ distinct real wallets** have created invoices this way (list below).
+- 📝 **User feedback loop** — an in-app link to a short feedback form; **12 real responses collected** (summary below), satisfying the "basic user feedback collection" requirement without extra backend infrastructure
 
 ### Level 3 — Advanced Contracts & Production Readiness
 - 🔗 **Inter-contract communication** — `contracts/auction`'s `finalize()` calls `contracts/registry`'s `record_finalized_auction()` in the same transaction, using contract-to-contract auth (no separate signature needed): the auction authorizes itself as caller, which Soroban accepts as "contract calling as itself"
@@ -190,7 +190,17 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 
 ## 📸 Screenshots
 
-*Level 4 screenshots (invoice creation/payment UI, mobile-responsive invoice view, and the `contracts/invoice` transaction history on Stellar Expert — the actual proof of user interaction) will be added here once the app has real testnet usage.*
+### Level 4 — Product UI (live, connected to testnet)
+![Level 4 product UI](screenshots/level4-product-ui.jpg)
+
+### Level 4 — Live event feed showing real testers' invoices and bids
+![Level 4 live event feed](screenshots/level4-live-event-feed.jpg)
+
+### Level 4 — Mobile responsive view
+![Level 4 mobile responsive](screenshots/level4-mobile-responsive.jpg)
+
+### Level 4 — On-chain monitoring/proof (Stellar Expert, `contracts/invoice`)
+![Level 4 on-chain proof](screenshots/level4-onchain-proof.jpg)
 
 ### Multi-wallet selection (StellarWalletsKit)
 ![Wallet options](screenshots/wallet-options.jpg)
@@ -221,13 +231,43 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 
 ## 🔗 Example Transactions
 
-*Level 4 invoice contract deploy tx and a `create_invoice`/`pay_invoice` tx hash will be added here after testnet deployment.*
-
-- **Contract deploy:** [`f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19`](https://stellar.expert/explorer/testnet/tx/f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19)
+- **Invoice contract deploy:** [`f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19`](https://stellar.expert/explorer/testnet/tx/f89031fb4053c138311db50991b4b1bbac910868646fda603ad25d258f71ec19)
+- **`create_invoice` calls from 10+ distinct real wallets** — see the full, clickable list on the [`contracts/invoice` explorer page](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) (each row is its own transaction with a tx hash)
 - **Contract call (`bid`) via CLI**, verifiable on Stellar Explorer: [`c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e`](https://stellar.expert/explorer/testnet/tx/c0f8e2713ae9b91bc629d9cc615a42c50d0193868b8233c9e7c13a834340f51e)
 - **Contract call (`bid`) from the frontend**, wallet-signed via StellarWalletsKit: [`9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738`](https://stellar.expert/explorer/testnet/tx/9ec22054b8a6e3046d9cba2d3fb5cdd76eb91c2ba837adb1ab2c012472242738)
 - **Level 1 payment:** [`4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4`](https://stellar.expert/explorer/testnet/tx/4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4)
 - **`finalize()` with inter-contract call to registry (Level 3)**, from the frontend: [`bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db`](https://stellar.expert/explorer/testnet/tx/bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db)
+
+## ✅ Proof of 10+ User Wallet Interactions
+
+Verified live on [Stellar Expert](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) — 10 distinct wallet addresses (external to the development/deployer wallet) have each called `create_invoice` on the live testnet contract:
+
+| # | Wallet address (truncated, as shown on Stellar Expert) | Invoice ID |
+|---|---|---|
+| 1 | `GA4W…U3NI` | 7 |
+| 2 | `GC6Q…25KJ` | 6 |
+| 3 | `GDIW…SX27` | 5 |
+| 4 | `GBWP…ES6X` | 4 |
+| 5 | `GDNX…HPNO` | 9 |
+| 6 | `GD5R…Z6YK` | 8 |
+| 7 | `GCZS…47TJ` | 10 |
+| 8 | `GCJ7…JAJZ` | 11 |
+| 9 | `GBPI…O4JG` | 12 |
+| 10 | `GBBX…ZDV4` | 13 |
+
+Full addresses and tx hashes are visible by clicking through to the [contract's transaction history](https://stellar.expert/explorer/testnet/contract/CD6FLY7IQ2J2ZI5E6OJC37D44A6PHYAGX7WX3KHY5F2JHIYWNMK47NKI) — this table is on-chain, tamper-proof evidence, free to verify, no analytics platform or trust required.
+
+### User feedback summary (12 responses)
+
+Collected via the in-app [feedback form](https://docs.google.com/forms/d/e/1FAIpQLSeBVrfm_zY98r8lfZe9aEegB3RpHIxmpYerP17BTstCC0NDaA/viewform) ([raw responses](https://docs.google.com/forms/d/1Fpfzyjtiq6u-cAXxOYLBsNlvX1eDVJjxx3mLCgTII-c/edit#responses)):
+
+- **Overall experience:** 10/11 rated 5/5, 1/11 rated 4/5 — no negative ratings.
+- **What users liked** (translated highlights): the live auction + invoice creation being on the same page ("practical, saves time"), the interface being clean and easy to understand, fast wallet connection and instant bid/invoice updates, seeing the transaction hash immediately after a successful action.
+- **Suggestions for improvement**: shorter/clearer invoice list layout, clearer menu icons, stronger form validation, a loading indicator during transactions, a countdown timer on the auction, and better mobile polish.
+
+## 🔭 Roadmap — What We'll Improve Next
+
+Based on the feedback above, the next iteration will focus on: a countdown timer for the live auction, an in-progress loading indicator on transaction submission, tighter mobile layout for the invoice list, and clearer menu/icon labeling.
 
 ## 🔭 Level 5 — Growth & Product Iteration
 
