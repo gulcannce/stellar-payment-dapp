@@ -5,7 +5,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - **Level 1 – White Belt** ✅ *(Approved)* — a payment dApp (Freighter wallet, XLM balance, send XLM, transaction history)
 - **Level 2 – Yellow Belt** ✅ *(Approved)* — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
 - **Level 3 – Orange Belt** *(Pending Review)* — adds a second Soroban contract with **inter-contract communication** (the auction reports each finalized sale to a platform-wide registry), a CI/CD pipeline, and a full test suite across both contracts and the frontend.
-- **Level 4 – Green Belt** *(in progress)* — a production-ready **Invoice Tracker MVP** built on the approved Idea Submission (Cross-Border Freelancer Payment & Invoice Tracker): a multi-invoice Soroban contract, analytics/monitoring, and a user feedback loop. Contract deployed to testnet, app deployed to Vercel; real-user onboarding and the demo video are still pending.
+- **Level 4 – Green Belt** *(in progress)* — a production-ready **Invoice Tracker MVP** built on the approved Idea Submission (Cross-Border Freelancer Payment & Invoice Tracker): a multi-invoice Soroban contract, analytics/monitoring, and a user feedback loop. Contract deployed to testnet, app deployed to Vercel, demo video recorded; real-user onboarding (10+ wallet interactions) is still pending.
 - **Level 5 – Blue Belt** *(not started — prep only)* — scaling to 50+ real testnet users, iterating on the product from their feedback, and preparing a pitch deck + full demo. See [Level 5 — Growth & Product Iteration](#-level-5--growth--product-iteration) below.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
@@ -13,6 +13,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 🌐 **Live Demo (Level 1–3, GitHub Pages):** https://gulcannce.github.io/stellar-payment-dapp/
 
 🎥 **Demo Video (Level 3):** https://drive.google.com/file/d/1K4hCrloVmJuyr7mVjPr3_ptcyeZObA2m/view?usp=sharing
+
+🎥 **Demo Video (Level 4):** https://drive.google.com/file/d/1ozog20pUPCFhztRJpM7BFYkMNZ79Rol-/view?usp=drive_link
 
 ## ✨ Features
 
