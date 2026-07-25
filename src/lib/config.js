@@ -3,14 +3,16 @@ export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 
-// contracts/auction v3 — 24 Temmuz 2026'da demo videosu için yeni bir açık artırma
-// instance'ı deploy edildi (v2'nin süresi dolmuştu). Aynı registry yeniden kullanıldı.
-// Level 3 kanıtı olarak v2 hâlâ canlı: CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM
-// Level 2 kanıtı olarak eski v1 contract'ı hâlâ canlı: CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV
+// contracts/auction v4 — 25 Temmuz 2026'da süre dolduğu için yeni bir açık artırma
+// instance'ı (13 saatlik end_time ile) deploy edildi. Aynı registry yeniden kullanıldı.
+// Önceki instance'lar (v1/v2/v3) geçmiş seviyelerin kanıtı olarak testnet'te canlı kalıyor:
+// v3: CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25
+// v2: CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM
+// v1: CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV
 // Build-time'da import.meta.env.VITE_* ile ezilebilir (bkz. Vercel deploy ayarları);
 // yoksa yerel geliştirme için bilinen testnet adresleri kullanılır.
 export const CONTRACT_ID =
-  import.meta.env.VITE_CONTRACT_ID || "CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25";
+  import.meta.env.VITE_CONTRACT_ID || "CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC";
 // contracts/registry — auction'ın finalize()'ının çağırdığı platform geneli
 // istatistik contract'ı (inter-contract iletişim).
 export const REGISTRY_ID =
