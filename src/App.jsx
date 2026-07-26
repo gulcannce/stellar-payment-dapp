@@ -71,8 +71,8 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>🌟 Stellar Live Auction dApp</h1>
-        <p className="subtitle">Stellar Testnet üzerinde çoklu cüzdanla açık artırma</p>
+        <h1>✨ GlowPay</h1>
+        <p className="subtitle">Stellar Testnet üzerinde fatura takibi ve açık artırma</p>
       </header>
 
       <div className="card">

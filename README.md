@@ -1,6 +1,6 @@
-# 🌟 Stellar Live Auction dApp
+# ✨ GlowPay
 
-A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challenge.
+A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challenge — invoice tracking + live on-chain auction.
 
 - **Level 1 – White Belt** ✅ *(Approved)* — a payment dApp (Freighter wallet, XLM balance, send XLM, transaction history)
 - **Level 2 – Yellow Belt** ✅ *(Approved)* — evolves the same app into a **live, on-chain auction**: multi-wallet support, a deployed Soroban smart contract, real-time event synchronization, and explicit transaction-status tracking.
