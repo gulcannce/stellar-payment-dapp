@@ -12,6 +12,16 @@ import {
 import { STROOPS_PER_XLM } from "../lib/config";
 import { classifyError, assertSufficientBalance, ERROR_TYPES } from "../lib/errors";
 
+function statusToString(status) {
+  // Veri taşımayan contracttype enum'ları (Draft/Sent/...) scValToNative
+  // tarafından { tag } değil, tek elemanlı bir dizi olarak dönüyor: ["Draft"].
+  // Obje-anahtarı erişimlerinde (STATUS_LABEL[status]) dizi otomatik string'e
+  // çevrildiği için bu fark edilmiyordu, ama === karşılaştırmaları hep false
+  // dönüyordu — bu yüzden Gönder/Öde butonları hiç görünmüyordu.
+  if (Array.isArray(status)) return status[0];
+  return status?.tag ?? status;
+}
+
 function fromRawInvoice(raw) {
   return {
     id: raw.id,
@@ -20,9 +30,7 @@ function fromRawInvoice(raw) {
     amount: Number(raw.amount) / STROOPS_PER_XLM,
     dueDate: Number(raw.due_date),
     memo: raw.memo,
-    // Contract'ın InvoiceStatus enum'u soroban_sdk tarafından JS'e
-    // { tag: "Draft" | "Sent" | "Overdue" | "Paid" | "Cancelled", values: [] } olarak dönüyor.
-    status: raw.status?.tag ?? raw.status,
+    status: statusToString(raw.status),
   };
 }
 
