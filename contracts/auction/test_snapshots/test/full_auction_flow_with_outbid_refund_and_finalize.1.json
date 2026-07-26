@@ -85,6 +85,9 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                 },
                 {
+                  "string": "Ay\\xc5\\x9fe"
+                },
+                {
                   "string": "Vintage Camera"
                 },
                 {
@@ -103,6 +106,7 @@
         }
       ]
     ],
+    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
@@ -117,6 +121,9 @@
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                },
+                {
+                  "string": "Mehmet"
                 },
                 {
                   "i128": "100"
@@ -167,6 +174,9 @@
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                },
+                {
+                  "string": "Zeynep"
                 },
                 {
                   "i128": "200"
@@ -553,6 +563,14 @@
                   },
                   {
                     "key": {
+                      "symbol": "highest_bidder_name"
+                    },
+                    "val": {
+                      "string": "Zeynep"
+                    }
+                  },
+                  {
+                    "key": {
                       "symbol": "id"
                     },
                     "val": {
@@ -581,6 +599,14 @@
                     },
                     "val": {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "seller_name"
+                    },
+                    "val": {
+                      "string": "Ay\\xc5\\x9fe"
                     }
                   }
                 ]

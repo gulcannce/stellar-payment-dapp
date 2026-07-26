@@ -20,12 +20,14 @@ function fromRawAuction(raw) {
   return {
     id: raw.id,
     seller: raw.seller,
+    sellerName: raw.seller_name,
     itemName: raw.item_name,
     description: raw.description,
     minBid: Number(raw.min_bid) / STROOPS_PER_XLM,
     endTime: Number(raw.end_time),
     highestBid: Number(raw.highest_bid) / STROOPS_PER_XLM,
     highestBidder: raw.highest_bidder ?? null,
+    highestBidderName: raw.highest_bidder_name,
     finalized: raw.finalized,
   };
 }
@@ -56,7 +58,7 @@ export function useAuctionContract({ address, signTransaction }) {
   }, [refresh]);
 
   const createAuction = useCallback(
-    async (itemName, description, minBidXlm, durationSecs) => {
+    async (sellerName, itemName, description, minBidXlm, durationSecs) => {
       setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
       try {
         if (!address) {
@@ -67,6 +69,7 @@ export function useAuctionContract({ address, signTransaction }) {
           method: "create_auction",
           scArgs: [
             addressScVal(address),
+            stringScVal(sellerName),
             stringScVal(itemName),
             stringScVal(description),
             i128ScVal(minBidStroops),
@@ -77,7 +80,7 @@ export function useAuctionContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Açık artırma oluşturuldu! 🏺", hash });
+        setTxStatus({ phase: "success", message: "Açık artırma oluşturuldu! 🔨", hash });
         await refresh();
         return hash;
       } catch (err) {
@@ -90,7 +93,7 @@ export function useAuctionContract({ address, signTransaction }) {
   );
 
   const bid = useCallback(
-    async (id, amountXlm, balanceXlm) => {
+    async (id, amountXlm, bidderName, balanceXlm) => {
       setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
       try {
         if (!address) {
@@ -101,7 +104,12 @@ export function useAuctionContract({ address, signTransaction }) {
         const amountStroops = Math.round(Number(amountXlm) * STROOPS_PER_XLM);
         const { hash } = await invokeWithAuth({
           method: "bid",
-          scArgs: [u32ScVal(id), addressScVal(address), i128ScVal(amountStroops)],
+          scArgs: [
+            u32ScVal(id),
+            addressScVal(address),
+            stringScVal(bidderName),
+            i128ScVal(amountStroops),
+          ],
           sourcePublicKey: address,
           signTransaction,
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),

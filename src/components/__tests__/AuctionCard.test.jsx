@@ -60,4 +60,22 @@ describe("AuctionCard", () => {
     renderCard({}, "GSELLER");
     expect(screen.getByText(/\(sen\)/)).toBeInTheDocument();
   });
+
+  it("shows the seller's real name instead of their wallet address when known", () => {
+    renderCard({ sellerName: "Ayşe Yılmaz" }, "GBIDDER");
+    expect(screen.getByText(/Ayşe Yılmaz/)).toBeInTheDocument();
+  });
+
+  it("falls back to a shortened wallet address when no seller name is known", () => {
+    renderCard({ sellerName: "" }, "GBIDDER");
+    expect(screen.getByText(/GSELLE\.\.\.SELLER/)).toBeInTheDocument();
+  });
+
+  it("shows the highest bidder's real name instead of their wallet address", () => {
+    renderCard(
+      { highestBid: 150, highestBidder: "GOTHERBIDDER", highestBidderName: "Mehmet" },
+      "GBIDDER"
+    );
+    expect(screen.getByText("Mehmet")).toBeInTheDocument();
+  });
 });

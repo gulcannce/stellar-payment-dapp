@@ -85,6 +85,9 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                 },
                 {
+                  "string": "Ay\\xc5\\x9fe"
+                },
+                {
                   "string": "Vintage Camera"
                 },
                 {
@@ -114,6 +117,9 @@
               "args": [
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                },
+                {
+                  "string": "Mehmet"
                 },
                 {
                   "string": "Vintage Camera"
@@ -148,6 +154,9 @@
                 },
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                },
+                {
+                  "string": "Zeynep"
                 },
                 {
                   "i128": "150"
@@ -196,6 +205,9 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
+                  "string": "Ali"
+                },
+                {
                   "i128": "75"
                 }
               ]
@@ -226,6 +238,8 @@
         }
       ]
     ],
+    [],
+    [],
     [],
     [],
     [],
@@ -663,6 +677,14 @@
                   },
                   {
                     "key": {
+                      "symbol": "highest_bidder_name"
+                    },
+                    "val": {
+                      "string": "Zeynep"
+                    }
+                  },
+                  {
+                    "key": {
                       "symbol": "id"
                     },
                     "val": {
@@ -691,6 +713,14 @@
                     },
                     "val": {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "seller_name"
+                    },
+                    "val": {
+                      "string": "Ay\\xc5\\x9fe"
                     }
                   }
                 ]
@@ -763,6 +793,14 @@
                   },
                   {
                     "key": {
+                      "symbol": "highest_bidder_name"
+                    },
+                    "val": {
+                      "string": "Ali"
+                    }
+                  },
+                  {
+                    "key": {
                       "symbol": "id"
                     },
                     "val": {
@@ -791,6 +829,14 @@
                     },
                     "val": {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "seller_name"
+                    },
+                    "val": {
+                      "string": "Mehmet"
                     }
                   }
                 ]

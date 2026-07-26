@@ -2,7 +2,7 @@ import { shortAddress, formatXlm } from "../lib/format";
 
 function describeEvent(ev) {
   if (ev.kind === "auction_created") {
-    return `🏺 Yeni açık artırma #${ev.auctionId}: taban teklif ${formatXlm(ev.minBid)}`;
+    return `🔨 Yeni açık artırma #${ev.auctionId}: taban teklif ${formatXlm(ev.minBid)}`;
   }
   if (ev.kind === "new_bid") {
     return `Açık Artırma #${ev.auctionId}: ${shortAddress(ev.bidder)} → ${formatXlm(ev.amount)} teklif verdi`;

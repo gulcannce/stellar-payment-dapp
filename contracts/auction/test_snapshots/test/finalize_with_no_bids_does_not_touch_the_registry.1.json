@@ -41,6 +41,9 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
                 },
                 {
+                  "string": "Ay\\xc5\\x9fe"
+                },
+                {
                   "string": "Vintage Camera"
                 },
                 {
@@ -216,6 +219,14 @@
                   },
                   {
                     "key": {
+                      "symbol": "highest_bidder_name"
+                    },
+                    "val": {
+                      "string": ""
+                    }
+                  },
+                  {
+                    "key": {
                       "symbol": "id"
                     },
                     "val": {
@@ -244,6 +255,14 @@
                     },
                     "val": {
                       "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "seller_name"
+                    },
+                    "val": {
+                      "string": "Ay\\xc5\\x9fe"
                     }
                   }
                 ]

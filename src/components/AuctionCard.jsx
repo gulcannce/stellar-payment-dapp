@@ -10,7 +10,7 @@ export function AuctionCard({ auction, address, balance, submitting, onBid, onFi
   return (
     <div className="card auction-card">
       <div className="row">
-        <h3>🏺 {auction.itemName}</h3>
+        <h3>🔨 {auction.itemName}</h3>
         <span className={`badge ${ended ? "ended" : "active"}`}>
           {ended ? "Süre Doldu" : "Açık"}
         </span>
@@ -22,15 +22,17 @@ export function AuctionCard({ auction, address, balance, submitting, onBid, onFi
         <span className="label">En Yüksek Teklif</span>
         <p className="balance-value">{formatXlm(auction.highestBid)}</p>
         {auction.highestBidder && (
-          <p className="mono small-text" title={auction.highestBidder}>
-            {isHighestBidder ? "👑 Sen önde gidiyorsun!" : shortAddress(auction.highestBidder)}
+          <p className="small-text" title={auction.highestBidder}>
+            {isHighestBidder
+              ? "👑 Sen önde gidiyorsun!"
+              : auction.highestBidderName || shortAddress(auction.highestBidder)}
           </p>
         )}
       </div>
 
       <div className="auction-meta">
         <span>
-          Satıcı: <span className="mono">{shortAddress(auction.seller)}</span>
+          Satıcı: {auction.sellerName || <span className="mono">{shortAddress(auction.seller)}</span>}
           {isSeller && " (sen)"}
         </span>
         <span>Bitiş: {formatDateTime(auction.endTime)}</span>
@@ -42,7 +44,7 @@ export function AuctionCard({ auction, address, balance, submitting, onBid, onFi
           minNextBid={minNextBid}
           disabled={!address}
           submitting={submitting}
-          onBid={(amount) => onBid(auction.id, amount, balance)}
+          onBid={(amount, bidderName) => onBid(auction.id, amount, bidderName, balance)}
         />
       )}
 

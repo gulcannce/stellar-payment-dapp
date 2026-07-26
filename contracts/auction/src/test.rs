@@ -32,6 +32,14 @@ fn description(env: &Env) -> String {
     String::from_str(env, "35mm film camera, works great")
 }
 
+fn seller_name(env: &Env) -> String {
+    String::from_str(env, "Ayşe")
+}
+
+fn bidder_name(env: &Env) -> String {
+    String::from_str(env, "Mehmet")
+}
+
 #[test]
 fn full_auction_flow_with_outbid_refund_and_finalize() {
     let env = Env::default();
@@ -53,33 +61,44 @@ fn full_auction_flow_with_outbid_refund_and_finalize() {
     let client = ContractClient::new(&env, &contract_id);
 
     client.initialize(&token_id, &registry_id);
-    let id = client.create_auction(&seller, &item_name(&env), &description(&env), &100, &1000);
+    let id = client.create_auction(
+        &seller,
+        &seller_name(&env),
+        &item_name(&env),
+        &description(&env),
+        &100,
+        &1000,
+    );
     assert_eq!(id, 0);
+    assert_eq!(client.get_auction(&id).seller_name, seller_name(&env));
 
     // First bid at the minimum is accepted.
-    client.bid(&id, &bidder_a, &100);
+    client.bid(&id, &bidder_a, &bidder_name(&env), &100);
     let auction = client.get_auction(&id);
     assert_eq!(auction.highest_bid, 100);
     assert_eq!(auction.highest_bidder, Some(bidder_a.clone()));
+    assert_eq!(auction.highest_bidder_name, bidder_name(&env));
     assert_eq!(token_client.balance(&bidder_a), 900);
     assert_eq!(token_client.balance(&contract_id), 100);
 
     // A lower bid than the current highest is rejected.
-    let result = client.try_bid(&id, &bidder_b, &50);
+    let result = client.try_bid(&id, &bidder_b, &bidder_name(&env), &50);
     assert_eq!(result, Err(Ok(AuctionError::BidTooLow)));
 
     // A higher bid is accepted, and the previous bidder is refunded automatically.
-    client.bid(&id, &bidder_b, &200);
+    let bidder_b_name = String::from_str(&env, "Zeynep");
+    client.bid(&id, &bidder_b, &bidder_b_name, &200);
     let auction = client.get_auction(&id);
     assert_eq!(auction.highest_bid, 200);
     assert_eq!(auction.highest_bidder, Some(bidder_b.clone()));
+    assert_eq!(auction.highest_bidder_name, bidder_b_name);
     assert_eq!(token_client.balance(&bidder_a), 1_000);
     assert_eq!(token_client.balance(&bidder_b), 800);
     assert_eq!(token_client.balance(&contract_id), 200);
 
     // Bidding after the end time fails.
     set_time(&env, 2000);
-    let result = client.try_bid(&id, &bidder_a, &500);
+    let result = client.try_bid(&id, &bidder_a, &bidder_name(&env), &500);
     assert_eq!(result, Err(Ok(AuctionError::AuctionEnded)));
 
     // Finalize pays the winning bid out to the seller AND records it on the
@@ -127,17 +146,37 @@ fn multiple_concurrent_auctions_do_not_interfere_with_each_other() {
     client.initialize(&token_id, &registry_id);
 
     // Two independent listings from the same deployed contract instance.
-    let id_a = client.create_auction(&seller_a, &item_name(&env), &description(&env), &100, &1000);
-    let id_b = client.create_auction(&seller_b, &item_name(&env), &description(&env), &50, &1000);
+    let seller_a_name = String::from_str(&env, "Ayşe");
+    let seller_b_name = String::from_str(&env, "Mehmet");
+    let id_a = client.create_auction(
+        &seller_a,
+        &seller_a_name,
+        &item_name(&env),
+        &description(&env),
+        &100,
+        &1000,
+    );
+    let id_b = client.create_auction(
+        &seller_b,
+        &seller_b_name,
+        &item_name(&env),
+        &description(&env),
+        &50,
+        &1000,
+    );
     assert_eq!(id_a, 0);
     assert_eq!(id_b, 1);
 
-    client.bid(&id_a, &bidder_a, &150);
-    client.bid(&id_b, &bidder_b, &75);
+    let bidder_a_name = String::from_str(&env, "Zeynep");
+    let bidder_b_name = String::from_str(&env, "Ali");
+    client.bid(&id_a, &bidder_a, &bidder_a_name, &150);
+    client.bid(&id_b, &bidder_b, &bidder_b_name, &75);
 
-    // Each auction tracks its own highest bid independently.
+    // Each auction tracks its own highest bid AND bidder name independently.
     assert_eq!(client.get_auction(&id_a).highest_bid, 150);
+    assert_eq!(client.get_auction(&id_a).highest_bidder_name, bidder_a_name);
     assert_eq!(client.get_auction(&id_b).highest_bid, 75);
+    assert_eq!(client.get_auction(&id_b).highest_bidder_name, bidder_b_name);
 
     let active = client.get_active_auctions();
     assert_eq!(active.len(), 2);
@@ -195,7 +234,14 @@ fn finalize_with_no_bids_does_not_touch_the_registry() {
     let contract_id = env.register(Contract, ());
     let client = ContractClient::new(&env, &contract_id);
     client.initialize(&token_id, &registry_id);
-    let id = client.create_auction(&seller, &item_name(&env), &description(&env), &100, &1000);
+    let id = client.create_auction(
+        &seller,
+        &seller_name(&env),
+        &item_name(&env),
+        &description(&env),
+        &100,
+        &1000,
+    );
 
     set_time(&env, 2000);
     client.finalize(&id);
@@ -221,7 +267,7 @@ fn bidding_or_finalizing_an_unknown_id_fails() {
     let client = ContractClient::new(&env, &contract_id);
     client.initialize(&token_id, &registry_id);
 
-    let result = client.try_bid(&99, &bidder, &100);
+    let result = client.try_bid(&99, &bidder, &bidder_name(&env), &100);
     assert_eq!(result, Err(Ok(AuctionError::AuctionNotFound)));
 
     let result = client.try_finalize(&99);

@@ -40,11 +40,13 @@ pub enum AuctionError {
 pub struct Auction {
     pub id: u32,
     pub seller: Address,
+    pub seller_name: String,
     pub item_name: String,
     pub description: String,
     pub min_bid: i128,
     pub end_time: u64,
     pub highest_bidder: Option<Address>,
+    pub highest_bidder_name: String,
     pub highest_bid: i128,
     pub finalized: bool,
 }
@@ -102,6 +104,7 @@ impl Contract {
     pub fn create_auction(
         env: Env,
         seller: Address,
+        seller_name: String,
         item_name: String,
         description: String,
         min_bid: i128,
@@ -117,11 +120,13 @@ impl Contract {
         let auction = Auction {
             id,
             seller: seller.clone(),
+            seller_name,
             item_name,
             description,
             min_bid,
             end_time,
             highest_bidder: None,
+            highest_bidder_name: String::from_str(&env, ""),
             highest_bid: 0,
             finalized: false,
         };
@@ -135,7 +140,13 @@ impl Contract {
     /// Yeni teklif: mevcut en yüksek tekliften düşükse reddedilir; kabul edilirse bidder'dan
     /// contract'a (escrow) transfer edilir, önceki en yüksek teklif sahibine otomatik iade
     /// yapılır ve `new_bid` event'i yayınlanır.
-    pub fn bid(env: Env, id: u32, bidder: Address, amount: i128) -> Result<(), AuctionError> {
+    pub fn bid(
+        env: Env,
+        id: u32,
+        bidder: Address,
+        bidder_name: String,
+        amount: i128,
+    ) -> Result<(), AuctionError> {
         bidder.require_auth();
 
         let mut auction: Auction = env
@@ -168,6 +179,7 @@ impl Contract {
 
         auction.highest_bid = amount;
         auction.highest_bidder = Some(bidder.clone());
+        auction.highest_bidder_name = bidder_name;
         env.storage().persistent().set(&DataKey::Auction(id), &auction);
 
         NewBid { id, bidder, amount }.publish(&env);

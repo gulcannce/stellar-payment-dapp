@@ -3,12 +3,15 @@ export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 
-// contracts/auction v5 — 26 Temmuz 2026'da çoklu-listeleme mimarisine geçildi
-// (tek deploy edilmiş instance artık DataKey::Auction(u32) + NextId ile birden
-// fazla açık artırma barındırıyor, contracts/invoice'ın aynı deseni). Eski v4'ün
-// escrow'daki 1610 XLM'lik gerçek teklifi geçmeden önce finalize() ile satıcıya
-// aktarıldı (bkz. CLAUDE.md). Önceki instance'lar (v1-v4) geçmiş seviyelerin
-// kanıtı olarak testnet'te canlı kalıyor:
+// contracts/auction v6 — 26 Temmuz 2026'da satıcı/teklif veren için gerçek
+// isim alanları eklendi (create_auction'a seller_name, bid'e bidder_name).
+// Öncesinde kartlarda sadece kısaltılmış cüzdan adresi görünüyordu ("GABC...XYZ")
+// — gerçek açık artırma sitelerindeki gibi okunabilir bir isim göstermek için
+// Auction struct'ına seller_name + highest_bidder_name eklendi (bkz. CLAUDE.md).
+// v5'teki tek listing'de ("Vintage Fotoğraf Makinesi") hiç teklif yoktu (highest_bid: 0),
+// yani geçişte emanette bekleyen gerçek bir bakiye yoktu. Önceki instance'lar
+// (v1-v5) geçmiş seviyelerin kanıtı olarak testnet'te canlı kalıyor:
+// v5: CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX
 // v4: CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC
 // v3: CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25
 // v2: CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM
@@ -16,7 +19,7 @@ export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 // Build-time'da import.meta.env.VITE_* ile ezilebilir (bkz. Vercel deploy ayarları);
 // yoksa yerel geliştirme için bilinen testnet adresleri kullanılır.
 export const CONTRACT_ID =
-  import.meta.env.VITE_CONTRACT_ID || "CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX";
+  import.meta.env.VITE_CONTRACT_ID || "CCXMH4VWSBPW5QB7C4N4WTSL2PSOLIVC3NTM5PO37XESMF4TNBEJG6WN";
 // contracts/registry v2 — auction'ın finalize()'ının çağırdığı platform geneli
 // istatistik contract'ı (inter-contract iletişim). v2'ye geçildi çünkü tek bir
 // auction contract adresi artık birden fazla açık artırma barındırıyor;

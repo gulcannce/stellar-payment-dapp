@@ -96,12 +96,12 @@ function App() {
 
       {wallet.address && (
         <div className="card">
-          <h2>🏺 Açık Artırma Oluştur</h2>
+          <h2>🔨 Açık Artırma Oluştur</h2>
           <AuctionForm
             disabled={!wallet.address}
             submitting={auction.txStatus.phase === "pending"}
-            onCreate={(itemName, description, minBid, durationSecs) =>
-              auction.createAuction(itemName, description, minBid, durationSecs)
+            onCreate={(sellerName, itemName, description, minBid, durationSecs) =>
+              auction.createAuction(sellerName, itemName, description, minBid, durationSecs)
             }
           />
         </div>

@@ -9,6 +9,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - **Level 5 – Blue Belt** *(not started — prep only)* — scaling to 50+ real testnet users, iterating on the product from their feedback, and preparing a pitch deck + full demo. See [Level 5 — Growth & Product Iteration](#-level-5--growth--product-iteration) below.
 
 > **Update (26 Jul 2026):** the auction moved from a single-listing demo to a **real multi-listing marketplace** — anyone can list their own item, and any number of auctions run concurrently side by side (`contracts/auction` v5). This required a small breaking change to `contracts/registry` (v2) too — see [Smart Contracts](#-smart-contracts) below for details and the historical v1–v4/v1 addresses kept live as prior-level proof.
+>
+> **Update (26 Jul 2026, later same day):** sellers and bidders now enter a real display name (`contracts/auction` v6) instead of showing a raw wallet address on each listing card — closer to how a real auction site (eBay, etc.) identifies participants. The name is remembered in the browser (`localStorage`) so returning users don't retype it.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
 
@@ -35,10 +37,11 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - 🧪 **Frontend test suite** (Vitest + Testing Library) — covers error classification (`src/lib/__tests__/errors.test.js`), formatting helpers (`src/lib/__tests__/format.test.js`), and the bid form component (`src/components/__tests__/BidForm.test.jsx`)
 - 🦀 **Rust unit tests for both contracts** — `cargo test -p auction` and `cargo test -p registry`, including the cross-contract `finalize → record_finalized_auction` flow
 
-### Level 2 — Live Auction *(now a multi-listing marketplace, v5)*
+### Level 2 — Live Auction *(now a multi-listing marketplace, v6)*
 - 🏪 **Multi-listing marketplace** — one deployed contract instance holds any number of auctions (`DataKey::Auction(u32)` + `NextId`, the same pattern as `contracts/invoice`), so anyone can list their own item without a redeploy; browsing works even without a connected wallet
+- 🪪 **Real display names, not raw addresses** — sellers and bidders type a name once (remembered via `localStorage`) that's stored on-chain per listing (`seller_name`, `highest_bidder_name`) and shown on every card instead of a truncated wallet address
 - 🔗 **Multi-wallet support** via [StellarWalletsKit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) — Freighter, xBull, Albedo, Rabet, Lobstr, Hana and more, all through one connect flow
-- 🏺 **Soroban smart contract** (`contracts/auction`) deployed to testnet: `initialize`, `create_auction`, `bid`, `get_auction`, `get_active_auctions`, `get_auctions_for`, `finalize`
+- 🔨 **Soroban smart contract** (`contracts/auction`) deployed to testnet: `initialize`, `create_auction`, `bid`, `get_auction`, `get_active_auctions`, `get_auctions_for`, `finalize`
 - 💰 **On-chain escrow with automatic refunds** — a new highest bid pulls XLM into the contract and refunds the previous highest bidder in the same transaction, scoped per-listing
 - 📡 **Real-time event feed** — polls Soroban RPC `getEvents` (cursor-based) to show new listings, bids, and finalizations live, with no page refresh
 - 🧭 **Explicit transaction status machine** — every action moves through `idle → pending → success | fail`, shown in the UI at each step (building, awaiting signature, submitted, confirmed)
@@ -50,7 +53,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - 💸 Send XLM to any address, signed via the connected wallet
 - 🕘 Last 5 transactions with Stellar Expert links
 
-## 🏺 Smart Contracts
+## 🔨 Smart Contracts
 
 **`contracts/invoice`** (Rust / Soroban SDK 26) — added in Level 4
 
@@ -62,15 +65,15 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 | Functions | `initialize(token)`, `create_invoice(payee, payer, amount, due_date, memo)`, `send_invoice(id)`, `pay_invoice(id)`, `cancel_invoice(id)`, `get_invoice(id)`, `get_invoices_for(address)` |
 | Tests | `cargo test -p invoice` — covers create/send/pay/cancel transitions, wrong-status guards, double-pay prevention, and the derived `Overdue` status (no stored transition, computed against `due_date`) |
 
-**`contracts/auction`** (Rust / Soroban SDK 26) — v5: multi-listing marketplace
+**`contracts/auction`** (Rust / Soroban SDK 26) — v6: multi-listing marketplace with real display names
 
 | | |
 |---|---|
 | Network | Stellar Testnet |
-| Contract ID (current, v5) | [`CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX`](https://stellar.expert/explorer/testnet/contract/CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX) |
+| Contract ID (current, v6) | [`CCXMH4VWSBPW5QB7C4N4WTSL2PSOLIVC3NTM5PO37XESMF4TNBEJG6WN`](https://stellar.expert/explorer/testnet/contract/CCXMH4VWSBPW5QB7C4N4WTSL2PSOLIVC3NTM5PO37XESMF4TNBEJG6WN) |
 | Payment token | Native XLM (Stellar Asset Contract) `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
-| Functions | `initialize(token, registry)`, `create_auction(seller, item_name, description, min_bid, duration_secs)`, `bid(id, bidder, amount)`, `get_auction(id)`, `get_active_auctions()`, `get_auctions_for(seller)`, `finalize(id)` |
-| Tests | `cargo test -p auction` — covers accepted/rejected bids, automatic refund, finalize payout, double-init/double-finalize guards, unknown-id guards, **two concurrent auctions from the same instance not interfering with each other**, and the cross-contract call to registry on finalize |
+| Functions | `initialize(token, registry)`, `create_auction(seller, seller_name, item_name, description, min_bid, duration_secs)`, `bid(id, bidder, bidder_name, amount)`, `get_auction(id)`, `get_active_auctions()`, `get_auctions_for(seller)`, `finalize(id)` |
+| Tests | `cargo test -p auction` — covers accepted/rejected bids, automatic refund, finalize payout, double-init/double-finalize guards, unknown-id guards, **two concurrent auctions from the same instance not interfering with each other**, seller/bidder names round-tripping independently per listing, and the cross-contract call to registry on finalize |
 
 **`contracts/registry`** (Rust / Soroban SDK 26) — added in Level 3 for inter-contract communication, v2: composite idempotency key
 
@@ -81,7 +84,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 | Tests | `cargo test -p registry` — covers stat accumulation, the idempotency guard, and recording **two different auction ids from the same contract address** (the exact case v2 fixed) |
 
 > Prior versions are kept live on testnet as historical proof of earlier levels (auction never had a redeploy migrate old state — each version is a fully independent instance):
-> auction v4 [`CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC`](https://stellar.expert/explorer/testnet/contract/CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC), v3 [`CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25`](https://stellar.expert/explorer/testnet/contract/CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25), v2 [`CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM`](https://stellar.expert/explorer/testnet/contract/CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM), v1 [`CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV`](https://stellar.expert/explorer/testnet/contract/CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV) (original Level 2 submission proof, no registry integration); registry v1 [`CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7`](https://stellar.expert/explorer/testnet/contract/CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7) (original Level 3 submission proof). Auction v4's one real pending bid (1610 XLM) was finalized to the seller before switching away, so no real funds were left stranded in escrow.
+> auction v5 [`CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX`](https://stellar.expert/explorer/testnet/contract/CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX) (first multi-listing marketplace, no name fields), v4 [`CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC`](https://stellar.expert/explorer/testnet/contract/CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC), v3 [`CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25`](https://stellar.expert/explorer/testnet/contract/CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25), v2 [`CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM`](https://stellar.expert/explorer/testnet/contract/CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM), v1 [`CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV`](https://stellar.expert/explorer/testnet/contract/CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV) (original Level 2 submission proof, no registry integration); registry v1 [`CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7`](https://stellar.expert/explorer/testnet/contract/CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7) (original Level 3 submission proof). Auction v4's one real pending bid (1610 XLM) was finalized to the seller before switching away, so no real funds were left stranded in escrow; auction v5's only listing had zero bids when v6 replaced it.
 
 ## 🛠️ Tech Stack
 
@@ -143,7 +146,8 @@ stellar contract invoke --id auction --source <your-key> --network testnet \
 
 # then anyone can list an item (no redeploy needed per listing):
 stellar contract invoke --id auction --source <your-key> --network testnet \
-  -- create_auction --seller <G...> --item_name "..." --description "..." \
+  -- create_auction --seller <G...> --seller_name "Ayşe Yılmaz" \
+  --item_name "..." --description "..." \
   --min_bid 10000000 --duration_secs 604800
 ```
 
@@ -179,9 +183,9 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 
 **Live Auction Marketplace (Level 2, now multi-listing):**
 1. Click **"🔗 Cüzdan Bağla"** and pick a wallet (Freighter, xBull, Albedo, ...) — browsing listings works even without connecting
-2. Once connected, click **"🏺 Açık Artırma Oluştur"** to list your own item (name, description, starting price, duration)
-3. Every open listing shows its current highest bid, seller, and end time, updating live
-4. Enter a bid above the current highest (or the minimum, if none yet) and click **"🔨 Teklif Ver"** on any listing
+2. Once connected, click **"🔨 Açık Artırma Oluştur"** to list your own item — enter your name (remembered for next time), item name, description, starting price, and duration
+3. Every open listing shows its current highest bid, seller name (not a raw wallet address), and end time, updating live
+4. Enter your name and a bid above the current highest (or the minimum, if none yet) and click **"🔨 Teklif Ver"** on any listing
 5. Approve the transaction in your wallet — the status banner tracks *building → awaiting signature → pending → success*
 6. Watch the **Canlı Olay Akışı** (live event feed) update with the new bid; if you were outbid, your XLM is refunded automatically
 
@@ -253,6 +257,12 @@ After deploying, set `INVOICE_CONTRACT_ID` in `src/lib/config.js` (or `VITE_INVO
 - **Auction v4 finalized before switching away** (the one real pending bid, 1610 XLM, released to the seller — no funds stranded): [`e7dd90b7c8b447ebb4c0eb5132a04378a6b5a71fb904af8c0cc9a14148d8d718`](https://stellar.expert/explorer/testnet/tx/e7dd90b7c8b447ebb4c0eb5132a04378a6b5a71fb904af8c0cc9a14148d8d718)
 - **Auction v5 deploy:** [`36a48090ba404594efb7f68ca1f8e0dc6185f048d795279ddfacd2df6f17fc7c`](https://stellar.expert/explorer/testnet/tx/36a48090ba404594efb7f68ca1f8e0dc6185f048d795279ddfacd2df6f17fc7c) · **Registry v2 deploy:** [`f0cae5d0de97d34ccf2e800ac294fa9e571b6a1b3f38d5c03f04ee73a44ca8bc`](https://stellar.expert/explorer/testnet/tx/f0cae5d0de97d34ccf2e800ac294fa9e571b6a1b3f38d5c03f04ee73a44ca8bc)
 - **First `create_auction` call on v5**, listing "Vintage Fotoğraf Makinesi": [`06e9e0b26361cbe5121e05f5e377b0a56d20ea4efff844a79067f524c83a16c6`](https://stellar.expert/explorer/testnet/tx/06e9e0b26361cbe5121e05f5e377b0a56d20ea4efff844a79067f524c83a16c6)
+
+**v6 real display names (26 Jul 2026, same day):**
+- **Auction v6 deploy:** [`ceb13a6c5a91f33acd0846137ddcfe8e1004e12d678ab674b7c509c86b1b40bb`](https://stellar.expert/explorer/testnet/tx/ceb13a6c5a91f33acd0846137ddcfe8e1004e12d678ab674b7c509c86b1b40bb)
+- **`initialize` call on v6:** [`f6d64eb5a6ea78e5d06a0fd2d10c28519d014f6a0faafd1a8be233d5a530dbe8`](https://stellar.expert/explorer/testnet/tx/f6d64eb5a6ea78e5d06a0fd2d10c28519d014f6a0faafd1a8be233d5a530dbe8)
+- **First `create_auction` call on v6** confirming `seller_name` round-trips correctly: [`08e36fd9b70ea582cf01c979e08f93abb6cadb77b011beacf31f490150c9b2c5`](https://stellar.expert/explorer/testnet/tx/08e36fd9b70ea582cf01c979e08f93abb6cadb77b011beacf31f490150c9b2c5)
+
 - **Level 1 payment:** [`4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4`](https://stellar.expert/explorer/testnet/tx/4f9b65d6010975f1b86b12bac37938fd1cac3ea2c725ced9804e5cd20ea1b2c4)
 - **`finalize()` with inter-contract call to registry (Level 3)**, from the frontend: [`bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db`](https://stellar.expert/explorer/testnet/tx/bae81cdcf70b9f286228b0678bfc67cefe82e56bc8db3e8417c96ed8cf73f4db)
 

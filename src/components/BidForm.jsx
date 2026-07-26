@@ -1,13 +1,16 @@
 import { useState } from "react";
+import { getSavedDisplayName, saveDisplayName } from "../lib/displayName";
 
 export function BidForm({ minNextBid, disabled, submitting, onBid }) {
+  const [bidderName, setBidderName] = useState(getSavedDisplayName());
   const [amount, setAmount] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!amount) return;
+    if (!bidderName || !amount) return;
     try {
-      await onBid(amount);
+      await onBid(amount, bidderName);
+      saveDisplayName(bidderName);
       setAmount("");
     } catch {
       // Hata zaten StatusBanner üzerinden gösteriliyor.
@@ -16,6 +19,17 @@ export function BidForm({ minNextBid, disabled, submitting, onBid }) {
 
   return (
     <form className="bid-form" onSubmit={handleSubmit}>
+      <label>
+        Adın
+        <input
+          type="text"
+          placeholder="Ayşe Yılmaz"
+          value={bidderName}
+          onChange={(e) => setBidderName(e.target.value)}
+          required
+          disabled={disabled}
+        />
+      </label>
       <label>
         Teklifin (XLM) — en az {minNextBid.toFixed(2)} XLM
         <input

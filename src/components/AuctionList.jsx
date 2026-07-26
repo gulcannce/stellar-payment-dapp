@@ -7,7 +7,7 @@ export function AuctionList({ auctions, loading, address, balance, submitting, o
   if (loading) {
     return (
       <div className="card">
-        <h2>🏺 Açık Artırmalar</h2>
+        <h2>🔨 Açık Artırmalar</h2>
         <p>Yükleniyor...</p>
       </div>
     );
@@ -16,7 +16,7 @@ export function AuctionList({ auctions, loading, address, balance, submitting, o
   if (auctions.length === 0) {
     return (
       <div className="card">
-        <h2>🏺 Açık Artırmalar</h2>
+        <h2>🔨 Açık Artırmalar</h2>
         <p className="small-text hint">Şu an açık bir artırma yok. Yukarıdan ilkini sen oluştur!</p>
       </div>
     );
@@ -24,7 +24,7 @@ export function AuctionList({ auctions, loading, address, balance, submitting, o
 
   return (
     <div className="invoice-list">
-      <h2>🏺 Açık Artırmalar</h2>
+      <h2>🔨 Açık Artırmalar</h2>
       {auctions.map((auction) => (
         <AuctionCard
           key={auction.id}

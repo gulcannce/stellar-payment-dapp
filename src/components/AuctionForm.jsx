@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { getSavedDisplayName, saveDisplayName } from "../lib/displayName";
 
 export function AuctionForm({ disabled, submitting, onCreate }) {
+  const [sellerName, setSellerName] = useState(getSavedDisplayName());
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [minBid, setMinBid] = useState("");
@@ -8,10 +10,11 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!itemName || !minBid || !durationHours) return;
+    if (!sellerName || !itemName || !minBid || !durationHours) return;
     const durationSecs = Math.round(Number(durationHours) * 3600);
     try {
-      await onCreate(itemName, description, minBid, durationSecs);
+      await onCreate(sellerName, itemName, description, minBid, durationSecs);
+      saveDisplayName(sellerName);
       setItemName("");
       setDescription("");
       setMinBid("");
@@ -23,6 +26,17 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
 
   return (
     <form className="auction-form" onSubmit={handleSubmit}>
+      <label>
+        Adın
+        <input
+          type="text"
+          placeholder="Ayşe Yılmaz"
+          value={sellerName}
+          onChange={(e) => setSellerName(e.target.value)}
+          required
+          disabled={disabled}
+        />
+      </label>
       <label>
         Ürün Adı
         <input
@@ -71,7 +85,7 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
         />
       </label>
       <button className="btn primary" type="submit" disabled={disabled || submitting}>
-        {submitting ? "Açık artırma oluşturuluyor..." : "🏺 Açık Artırma Oluştur"}
+        {submitting ? "Açık artırma oluşturuluyor..." : "🔨 Açık Artırma Oluştur"}
       </button>
     </form>
   );
