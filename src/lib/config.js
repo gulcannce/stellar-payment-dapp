@@ -3,20 +3,30 @@ export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
 export const FRIENDBOT_URL = "https://friendbot.stellar.org";
 
-// contracts/auction v4 — 25 Temmuz 2026'da süre dolduğu için yeni bir açık artırma
-// instance'ı (13 saatlik end_time ile) deploy edildi. Aynı registry yeniden kullanıldı.
-// Önceki instance'lar (v1/v2/v3) geçmiş seviyelerin kanıtı olarak testnet'te canlı kalıyor:
+// contracts/auction v5 — 26 Temmuz 2026'da çoklu-listeleme mimarisine geçildi
+// (tek deploy edilmiş instance artık DataKey::Auction(u32) + NextId ile birden
+// fazla açık artırma barındırıyor, contracts/invoice'ın aynı deseni). Eski v4'ün
+// escrow'daki 1610 XLM'lik gerçek teklifi geçmeden önce finalize() ile satıcıya
+// aktarıldı (bkz. CLAUDE.md). Önceki instance'lar (v1-v4) geçmiş seviyelerin
+// kanıtı olarak testnet'te canlı kalıyor:
+// v4: CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC
 // v3: CCIO4FACYBGQJJIPBRPQFJ3UGWSOELLM52YG7BICEBTUHSXN75G7WS25
 // v2: CCWBM53KQO4OO5FUTT7U6ZEXSE3IUEGGYBVVHW54LMBVLBE36F7MZBRM
 // v1: CCQFEVYW2DXCV4P6YRLJIPWXHV6WWOYKKWRYEYEXLFDZH6IOPCXSMTZV
 // Build-time'da import.meta.env.VITE_* ile ezilebilir (bkz. Vercel deploy ayarları);
 // yoksa yerel geliştirme için bilinen testnet adresleri kullanılır.
 export const CONTRACT_ID =
-  import.meta.env.VITE_CONTRACT_ID || "CBF6ASW3BJ6JVNBHJV7P2TXU7OPGTD2EM5HZFKGWUJ6A33EBLVXC5VVC";
-// contracts/registry — auction'ın finalize()'ının çağırdığı platform geneli
-// istatistik contract'ı (inter-contract iletişim).
+  import.meta.env.VITE_CONTRACT_ID || "CBERDEJ3A6DAPYDUXKMWGVOGFYMRXLMV6XTK37WPVGDUMRY73SPQK2JX";
+// contracts/registry v2 — auction'ın finalize()'ının çağırdığı platform geneli
+// istatistik contract'ı (inter-contract iletişim). v2'ye geçildi çünkü tek bir
+// auction contract adresi artık birden fazla açık artırma barındırıyor;
+// record_finalized_auction'a bir auction_id parametresi eklendi, tekilleştirme
+// artık (adres, id) ikilisine göre yapılıyor (eskiden sadece adrese göreydi,
+// bu da aynı adresten 2. bir açık artırmanın hiç kaydedilmemesine yol açardı).
+// Eski registry (v1, Level 2/3 kanıtı) değişmeden testnet'te canlı kalıyor:
+// v1: CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7
 export const REGISTRY_ID =
-  import.meta.env.VITE_REGISTRY_ID || "CAIRCD3TGGTYML4FFK3WFBC2KFCIJ5ZHQCOVG67FGBHQBAEXOLXE7CV7";
+  import.meta.env.VITE_REGISTRY_ID || "CCYLRPIJTNIHTV6ISCYV2WZMQ7TXBEAZDD7DGWTHFSZXWDFAEHVDKEIW";
 // Native XLM'in Stellar Asset Contract (SAC) adresi — auction contract'ının
 // ödeme/iade transferlerinde kullandığı token.
 export const TOKEN_ID =

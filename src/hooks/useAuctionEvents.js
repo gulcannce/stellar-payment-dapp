@@ -11,6 +11,13 @@ const MAX_EVENTS = 20;
 // contractevent macro'sunun varsayılan davranışı: sabit ilk topic struct adının
 // snake_case hali ("NewBid" -> "new_bid", "AuctionFinalized" -> "auction_finalized"),
 // ardından #[topic] işaretli alanlar gelir; kalan alanlar data map'inde taşınır.
+// v5: auction contract'ının kendi event'leri (created/new_bid/finalized) artık
+// #[topic] olarak bir `id` taşıyor çünkü tek instance birden fazla açık artırma
+// barındırıyor (useInvoiceEvents.js'teki invoiceId deseninin aynısı). Registry'nin
+// `auction_recorded` event'i topic şeklini değiştirmedi (auction adresi hâlâ tek
+// topic), sadece data map'ine bir `auction_id` alanı eklendi.
+const AUCTION_ID_KINDS = ["auction_created", "new_bid", "auction_finalized"];
+
 function decodeEvent(ev) {
   const topics = ev.topic.map((t) => scValToNative(t));
   const data = scValToNative(ev.value);
@@ -21,14 +28,20 @@ function decodeEvent(ev) {
     ledger: ev.ledger,
     closedAt: ev.ledgerClosedAt,
     kind,
-    bidder: kind === "new_bid" ? topics[1] : undefined,
+    auctionId: AUCTION_ID_KINDS.includes(kind)
+      ? Number(topics[1])
+      : kind === "auction_recorded"
+        ? Number(data.auction_id)
+        : undefined,
+    seller: kind === "auction_created" || kind === "auction_recorded" ? data.seller : undefined,
+    minBid: kind === "auction_created" ? Number(data.min_bid) / STROOPS_PER_XLM : undefined,
+    bidder: kind === "new_bid" ? data.bidder : undefined,
     amount: kind === "new_bid" ? Number(data.amount) / STROOPS_PER_XLM : undefined,
     winningBid:
       kind === "auction_finalized" || kind === "auction_recorded"
         ? Number(data.winning_bid) / STROOPS_PER_XLM
         : undefined,
     auction: kind === "auction_recorded" ? topics[1] : undefined,
-    seller: kind === "auction_recorded" ? data.seller : undefined,
   };
 }
 

@@ -15,7 +15,8 @@ import { WalletConnectButton } from "./components/WalletConnectButton";
 import { BalanceCard } from "./components/BalanceCard";
 import { PaymentForm } from "./components/PaymentForm";
 import { TransactionHistory } from "./components/TransactionHistory";
-import { AuctionCard } from "./components/AuctionCard";
+import { AuctionForm } from "./components/AuctionForm";
+import { AuctionList } from "./components/AuctionList";
 import { EventFeed } from "./components/EventFeed";
 import { StatusBanner } from "./components/StatusBanner";
 import { InvoiceForm } from "./components/InvoiceForm";
@@ -93,8 +94,22 @@ function App() {
       </div>
       <StatusBanner status={friendbot.status} />
 
-      <AuctionCard
-        state={auction.state}
+      {wallet.address && (
+        <div className="card">
+          <h2>🏺 Açık Artırma Oluştur</h2>
+          <AuctionForm
+            disabled={!wallet.address}
+            submitting={auction.txStatus.phase === "pending"}
+            onCreate={(itemName, description, minBid, durationSecs) =>
+              auction.createAuction(itemName, description, minBid, durationSecs)
+            }
+          />
+        </div>
+      )}
+      <StatusBanner status={auction.txStatus} />
+
+      <AuctionList
+        auctions={auction.auctions}
         loading={auction.loading}
         address={wallet.address}
         balance={balanceHook.balance}
@@ -102,7 +117,6 @@ function App() {
         onBid={auction.bid}
         onFinalize={auction.finalize}
       />
-      <StatusBanner status={auction.txStatus} />
 
       {wallet.address && (
         <div className="card">

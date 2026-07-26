@@ -287,8 +287,19 @@ footer {
   color: #ccc;
 }
 
-.auction-card h2 {
-  margin: 0;
+.auction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.auction-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #ccc;
 }
 
 .auction-highlight {

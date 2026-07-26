@@ -24,6 +24,14 @@ fn set_time(env: &Env, timestamp: u64) {
     });
 }
 
+fn item_name(env: &Env) -> String {
+    String::from_str(env, "Vintage Camera")
+}
+
+fn description(env: &Env) -> String {
+    String::from_str(env, "35mm film camera, works great")
+}
+
 #[test]
 fn full_auction_flow_with_outbid_refund_and_finalize() {
     let env = Env::default();
@@ -44,39 +52,41 @@ fn full_auction_flow_with_outbid_refund_and_finalize() {
     let contract_id = env.register(Contract, ());
     let client = ContractClient::new(&env, &contract_id);
 
-    client.initialize(&seller, &token_id, &100, &2000, &registry_id);
+    client.initialize(&token_id, &registry_id);
+    let id = client.create_auction(&seller, &item_name(&env), &description(&env), &100, &1000);
+    assert_eq!(id, 0);
 
     // First bid at the minimum is accepted.
-    client.bid(&bidder_a, &100);
-    let state = client.get_state();
-    assert_eq!(state.highest_bid, 100);
-    assert_eq!(state.highest_bidder, Some(bidder_a.clone()));
+    client.bid(&id, &bidder_a, &100);
+    let auction = client.get_auction(&id);
+    assert_eq!(auction.highest_bid, 100);
+    assert_eq!(auction.highest_bidder, Some(bidder_a.clone()));
     assert_eq!(token_client.balance(&bidder_a), 900);
     assert_eq!(token_client.balance(&contract_id), 100);
 
     // A lower bid than the current highest is rejected.
-    let result = client.try_bid(&bidder_b, &50);
+    let result = client.try_bid(&id, &bidder_b, &50);
     assert_eq!(result, Err(Ok(AuctionError::BidTooLow)));
 
     // A higher bid is accepted, and the previous bidder is refunded automatically.
-    client.bid(&bidder_b, &200);
-    let state = client.get_state();
-    assert_eq!(state.highest_bid, 200);
-    assert_eq!(state.highest_bidder, Some(bidder_b.clone()));
+    client.bid(&id, &bidder_b, &200);
+    let auction = client.get_auction(&id);
+    assert_eq!(auction.highest_bid, 200);
+    assert_eq!(auction.highest_bidder, Some(bidder_b.clone()));
     assert_eq!(token_client.balance(&bidder_a), 1_000);
     assert_eq!(token_client.balance(&bidder_b), 800);
     assert_eq!(token_client.balance(&contract_id), 200);
 
     // Bidding after the end time fails.
     set_time(&env, 2000);
-    let result = client.try_bid(&bidder_a, &500);
+    let result = client.try_bid(&id, &bidder_a, &500);
     assert_eq!(result, Err(Ok(AuctionError::AuctionEnded)));
 
     // Finalize pays the winning bid out to the seller AND records it on the
     // cross-contract registry (inter-contract communication).
-    client.finalize();
-    let state = client.get_state();
-    assert!(state.finalized);
+    client.finalize(&id);
+    let auction = client.get_auction(&id);
+    assert!(auction.finalized);
     assert_eq!(token_client.balance(&seller), 200);
     assert_eq!(token_client.balance(&contract_id), 0);
 
@@ -85,12 +95,72 @@ fn full_auction_flow_with_outbid_refund_and_finalize() {
     assert_eq!(stats.total_volume, 200);
     let recent = registry_client.get_recent_auctions();
     assert_eq!(recent.get(0).unwrap().auction, contract_id);
+    assert_eq!(recent.get(0).unwrap().auction_id, 0);
     assert_eq!(recent.get(0).unwrap().winning_bid, 200);
 
     // Finalizing twice is rejected, and the registry is not double-recorded.
-    let result = client.try_finalize();
+    let result = client.try_finalize(&id);
     assert_eq!(result, Err(Ok(AuctionError::AlreadyFinalized)));
     assert_eq!(registry_client.get_stats().total_finalized, 1);
+}
+
+#[test]
+fn multiple_concurrent_auctions_do_not_interfere_with_each_other() {
+    let env = Env::default();
+    env.mock_all_auths();
+    set_time(&env, 1000);
+
+    let seller_a = Address::generate(&env);
+    let seller_b = Address::generate(&env);
+    let bidder_a = Address::generate(&env);
+    let bidder_b = Address::generate(&env);
+    let token_admin = Address::generate(&env);
+
+    let (token_id, asset_client, token_client) = create_token(&env, &token_admin);
+    asset_client.mint(&bidder_a, &1_000);
+    asset_client.mint(&bidder_b, &1_000);
+
+    let (registry_id, registry_client) = create_registry(&env);
+
+    let contract_id = env.register(Contract, ());
+    let client = ContractClient::new(&env, &contract_id);
+    client.initialize(&token_id, &registry_id);
+
+    // Two independent listings from the same deployed contract instance.
+    let id_a = client.create_auction(&seller_a, &item_name(&env), &description(&env), &100, &1000);
+    let id_b = client.create_auction(&seller_b, &item_name(&env), &description(&env), &50, &1000);
+    assert_eq!(id_a, 0);
+    assert_eq!(id_b, 1);
+
+    client.bid(&id_a, &bidder_a, &150);
+    client.bid(&id_b, &bidder_b, &75);
+
+    // Each auction tracks its own highest bid independently.
+    assert_eq!(client.get_auction(&id_a).highest_bid, 150);
+    assert_eq!(client.get_auction(&id_b).highest_bid, 75);
+
+    let active = client.get_active_auctions();
+    assert_eq!(active.len(), 2);
+
+    set_time(&env, 2000);
+    client.finalize(&id_a);
+    client.finalize(&id_b);
+
+    assert_eq!(token_client.balance(&seller_a), 150);
+    assert_eq!(token_client.balance(&seller_b), 75);
+
+    // Both finalizations must reach the registry, even though they came from
+    // the exact same contract address — this is the v2 composite-idempotency
+    // fix (previously the second one would have been silently ignored).
+    let stats = registry_client.get_stats();
+    assert_eq!(stats.total_finalized, 2);
+    assert_eq!(stats.total_volume, 225);
+
+    // Both listings are gone from the active list once finalized.
+    assert_eq!(client.get_active_auctions().len(), 0);
+
+    // The seller's own listing view still shows both, regardless of status.
+    assert_eq!(client.get_auctions_for(&seller_a).len(), 1);
 }
 
 #[test]
@@ -99,7 +169,6 @@ fn cannot_initialize_twice() {
     env.mock_all_auths();
     set_time(&env, 1000);
 
-    let seller = Address::generate(&env);
     let token_admin = Address::generate(&env);
     let (token_id, _asset_client, _token_client) = create_token(&env, &token_admin);
     let (registry_id, _registry_client) = create_registry(&env);
@@ -107,8 +176,8 @@ fn cannot_initialize_twice() {
     let contract_id = env.register(Contract, ());
     let client = ContractClient::new(&env, &contract_id);
 
-    client.initialize(&seller, &token_id, &100, &2000, &registry_id);
-    let result = client.try_initialize(&seller, &token_id, &100, &2000, &registry_id);
+    client.initialize(&token_id, &registry_id);
+    let result = client.try_initialize(&token_id, &registry_id);
     assert_eq!(result, Err(Ok(AuctionError::AlreadyInitialized)));
 }
 
@@ -125,12 +194,36 @@ fn finalize_with_no_bids_does_not_touch_the_registry() {
 
     let contract_id = env.register(Contract, ());
     let client = ContractClient::new(&env, &contract_id);
-    client.initialize(&seller, &token_id, &100, &2000, &registry_id);
+    client.initialize(&token_id, &registry_id);
+    let id = client.create_auction(&seller, &item_name(&env), &description(&env), &100, &1000);
 
     set_time(&env, 2000);
-    client.finalize();
+    client.finalize(&id);
 
     let stats = registry_client.get_stats();
     assert_eq!(stats.total_finalized, 0);
     assert_eq!(stats.total_volume, 0);
+}
+
+#[test]
+fn bidding_or_finalizing_an_unknown_id_fails() {
+    let env = Env::default();
+    env.mock_all_auths();
+    set_time(&env, 1000);
+
+    let token_admin = Address::generate(&env);
+    let bidder = Address::generate(&env);
+    let (token_id, asset_client, _token_client) = create_token(&env, &token_admin);
+    asset_client.mint(&bidder, &1_000);
+    let (registry_id, _registry_client) = create_registry(&env);
+
+    let contract_id = env.register(Contract, ());
+    let client = ContractClient::new(&env, &contract_id);
+    client.initialize(&token_id, &registry_id);
+
+    let result = client.try_bid(&99, &bidder, &100);
+    assert_eq!(result, Err(Ok(AuctionError::AuctionNotFound)));
+
+    let result = client.try_finalize(&99);
+    assert_eq!(result, Err(Ok(AuctionError::AuctionNotFound)));
 }

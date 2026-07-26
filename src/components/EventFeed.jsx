@@ -1,14 +1,17 @@
 import { shortAddress, formatXlm } from "../lib/format";
 
 function describeEvent(ev) {
+  if (ev.kind === "auction_created") {
+    return `🏺 Yeni açık artırma #${ev.auctionId}: taban teklif ${formatXlm(ev.minBid)}`;
+  }
   if (ev.kind === "new_bid") {
-    return `${shortAddress(ev.bidder)} → ${formatXlm(ev.amount)} teklif verdi`;
+    return `Açık Artırma #${ev.auctionId}: ${shortAddress(ev.bidder)} → ${formatXlm(ev.amount)} teklif verdi`;
   }
   if (ev.kind === "auction_finalized") {
-    return `Açık artırma sonuçlandı: kazanan teklif ${formatXlm(ev.winningBid)}`;
+    return `Açık Artırma #${ev.auctionId} sonuçlandı: kazanan teklif ${formatXlm(ev.winningBid)}`;
   }
   if (ev.kind === "auction_recorded") {
-    return `📋 Sicile kaydedildi: ${shortAddress(ev.auction)} — ${formatXlm(ev.winningBid)}`;
+    return `📋 Sicile kaydedildi: Açık Artırma #${ev.auctionId} (${shortAddress(ev.auction)}) — ${formatXlm(ev.winningBid)}`;
   }
   if (ev.kind === "invoice_created") {
     return `🧾 Yeni fatura #${ev.invoiceId}: ${shortAddress(ev.payee)} → ${shortAddress(ev.payer)} (${formatXlm(ev.amount)})`;

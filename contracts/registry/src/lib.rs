@@ -6,7 +6,12 @@ use soroban_sdk::{contract, contractevent, contractimpl, contracttype, vec, Addr
 pub enum RegistryDataKey {
     TotalFinalized,
     TotalVolume,
-    Recorded(Address),
+    // v2: tekilleştirme artık sadece auction contract adresine göre değil,
+    // (adres, açık artırma id'si) ikilisine göre yapılıyor — tek bir deploy
+    // edilmiş contract instance'ı artık birden fazla açık artırma barındırdığı
+    // için (bkz. contracts/auction v5), aynı adresten gelen 2. bir açık
+    // artırmanın da kaydedilebilmesi gerekiyor.
+    Recorded(Address, u32),
     RecentAuctions,
 }
 
@@ -21,6 +26,7 @@ pub struct RegistryStats {
 #[derive(Clone)]
 pub struct AuctionRecord {
     pub auction: Address,
+    pub auction_id: u32,
     pub seller: Address,
     pub winning_bid: i128,
 }
@@ -32,6 +38,7 @@ const MAX_RECENT: u32 = 20;
 pub struct AuctionRecorded {
     #[topic]
     pub auction: Address,
+    pub auction_id: u32,
     pub seller: Address,
     pub winning_bid: i128,
 }
@@ -45,21 +52,25 @@ impl Contract {
     /// `auction` adresindeki contract'ın kendisi (çağrı zincirinde
     /// yetkilendirilmiş olarak) bu fonksiyonu çağırabilir — imzaya gerek
     /// yoktur, Soroban bunu "contract calling as itself" olarak doğrular.
-    /// Aynı auction adresi için ikinci bir kayda izin verilmez (idempotency).
-    pub fn record_finalized_auction(env: Env, auction: Address, seller: Address, winning_bid: i128) {
+    /// Aynı (auction adresi, açık artırma id'si) ikilisi için ikinci bir
+    /// kayda izin verilmez (idempotency) — v2: tek bir auction contract
+    /// instance'ı artık birden fazla açık artırma barındırdığı için
+    /// tekilleştirme sadece adrese göre değil, id'ye göre de yapılıyor.
+    pub fn record_finalized_auction(
+        env: Env,
+        auction: Address,
+        auction_id: u32,
+        seller: Address,
+        winning_bid: i128,
+    ) {
         auction.require_auth();
 
-        let already_recorded = env
-            .storage()
-            .persistent()
-            .get(&RegistryDataKey::Recorded(auction.clone()))
-            .unwrap_or(false);
+        let key = RegistryDataKey::Recorded(auction.clone(), auction_id);
+        let already_recorded = env.storage().persistent().get(&key).unwrap_or(false);
         if already_recorded {
             return;
         }
-        env.storage()
-            .persistent()
-            .set(&RegistryDataKey::Recorded(auction.clone()), &true);
+        env.storage().persistent().set(&key, &true);
 
         let total_finalized: u32 = env
             .storage()
@@ -88,6 +99,7 @@ impl Contract {
             0,
             AuctionRecord {
                 auction: auction.clone(),
+                auction_id,
                 seller: seller.clone(),
                 winning_bid,
             },
@@ -101,6 +113,7 @@ impl Contract {
 
         AuctionRecorded {
             auction,
+            auction_id,
             seller,
             winning_bid,
         }

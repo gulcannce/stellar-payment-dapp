@@ -9,6 +9,8 @@ export const rpcServer = new rpc.Server(RPC_URL);
 export const addressScVal = (address) => new Address(address).toScVal();
 export const i128ScVal = (value) => nativeToScVal(BigInt(value), { type: "i128" });
 export const u64ScVal = (value) => nativeToScVal(BigInt(value), { type: "u64" });
+export const u32ScVal = (value) => nativeToScVal(value, { type: "u32" });
+export const stringScVal = (value) => nativeToScVal(value, { type: "string" });
 
 // Salt-okunur bir contract fonksiyonunu (get_state gibi) simüle ederek okur;
 // imza veya işlem gönderimi gerekmez, bu yüzden cüzdan bağlı olmasa da çalışır.
