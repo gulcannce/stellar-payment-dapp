@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
@@ -23,7 +23,14 @@ import { InvoiceForm } from "./components/InvoiceForm";
 import { InvoiceList } from "./components/InvoiceList";
 import { FeedbackLink } from "./components/FeedbackLink";
 
+const TABS = [
+  { key: "auction", label: "🔨 Açık Artırma" },
+  { key: "invoice", label: "🧾 Faturalar" },
+  { key: "payment", label: "💸 Ödeme" },
+];
+
 function App() {
+  const [activeTab, setActiveTab] = useState(TABS[0].key);
   const wallet = useWallet();
   const balanceHook = useBalance();
   const friendbot = useFriendbot();
@@ -94,61 +101,101 @@ function App() {
       </div>
       <StatusBanner status={friendbot.status} />
 
-      {wallet.address && (
-        <div className="card">
-          <h2>🔨 Açık Artırma Oluştur</h2>
-          <AuctionForm
-            disabled={!wallet.address}
-            submitting={auction.txStatus.phase === "pending"}
-            onCreate={(sellerName, itemName, description, minBid, durationSecs) =>
-              auction.createAuction(sellerName, itemName, description, minBid, durationSecs)
-            }
-          />
-        </div>
-      )}
-      <StatusBanner status={auction.txStatus} />
+      <div className="tabs">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            className={`tab-button ${activeTab === tab.key ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      <AuctionList
-        auctions={auction.auctions}
-        loading={auction.loading}
-        address={wallet.address}
-        balance={balanceHook.balance}
-        submitting={auction.txStatus.phase === "pending"}
-        onBid={auction.bid}
-        onFinalize={auction.finalize}
-      />
-
-      {wallet.address && (
-        <div className="card">
-          <h2>🧾 Fatura Oluştur</h2>
-          <InvoiceForm
-            disabled={!wallet.address}
-            submitting={invoices.txStatus.phase === "pending"}
-            onCreate={(payer, amount, dueDate, memo) => invoices.createInvoice(payer, amount, dueDate, memo)}
-          />
-        </div>
-      )}
-      <StatusBanner status={invoices.txStatus} />
-
-      <InvoiceList
-        invoices={invoices.invoices}
-        loading={invoices.loading}
-        address={wallet.address}
-        submitting={invoices.txStatus.phase === "pending"}
-        onSend={invoices.sendInvoice}
-        onPay={(id) => invoices.payInvoice(id, invoices.invoices.find((inv) => inv.id === id)?.amount, balanceHook.balance)}
-        onCancel={invoices.cancelInvoice}
-      />
-
-      <EventFeed events={events} invoiceEvents={invoiceEvents} />
-
-      {wallet.address && (
+      {activeTab === "auction" && (
         <>
-          <PaymentForm onSend={(dest, amt) => payment.send(dest, amt, balanceHook.balance)} loading={payment.status.phase === "pending"} />
-          <StatusBanner status={payment.status} />
-          <TransactionHistory history={balanceHook.history} publicKey={wallet.address} />
+          {wallet.address && (
+            <div className="card">
+              <h2>🔨 Açık Artırma Oluştur</h2>
+              <AuctionForm
+                disabled={!wallet.address}
+                submitting={auction.txStatus.phase === "pending"}
+                onCreate={(sellerName, itemName, description, minBid, durationSecs) =>
+                  auction.createAuction(sellerName, itemName, description, minBid, durationSecs)
+                }
+              />
+            </div>
+          )}
+          <StatusBanner status={auction.txStatus} />
+
+          <AuctionList
+            auctions={auction.auctions}
+            loading={auction.loading}
+            address={wallet.address}
+            balance={balanceHook.balance}
+            submitting={auction.txStatus.phase === "pending"}
+            onBid={auction.bid}
+            onFinalize={auction.finalize}
+          />
         </>
       )}
+
+      {activeTab === "invoice" && (
+        <>
+          {wallet.address ? (
+            <>
+              <div className="card">
+                <h2>🧾 Fatura Oluştur</h2>
+                <InvoiceForm
+                  disabled={!wallet.address}
+                  submitting={invoices.txStatus.phase === "pending"}
+                  onCreate={(payer, amount, dueDate, memo) => invoices.createInvoice(payer, amount, dueDate, memo)}
+                />
+              </div>
+              <StatusBanner status={invoices.txStatus} />
+
+              <InvoiceList
+                invoices={invoices.invoices}
+                loading={invoices.loading}
+                address={wallet.address}
+                submitting={invoices.txStatus.phase === "pending"}
+                onSend={invoices.sendInvoice}
+                onPay={(id) =>
+                  invoices.payInvoice(id, invoices.invoices.find((inv) => inv.id === id)?.amount, balanceHook.balance)
+                }
+                onCancel={invoices.cancelInvoice}
+              />
+            </>
+          ) : (
+            <div className="card">
+              <p className="small-text hint">Faturalarını görmek ve oluşturmak için önce cüzdanını bağla.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {activeTab === "payment" && (
+        <>
+          {wallet.address ? (
+            <>
+              <PaymentForm
+                onSend={(dest, amt) => payment.send(dest, amt, balanceHook.balance)}
+                loading={payment.status.phase === "pending"}
+              />
+              <StatusBanner status={payment.status} />
+              <TransactionHistory history={balanceHook.history} publicKey={wallet.address} />
+            </>
+          ) : (
+            <div className="card">
+              <p className="small-text hint">Ödeme gönderebilmek için önce cüzdanını bağla.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      <EventFeed events={events} invoiceEvents={invoiceEvents} />
 
       <FeedbackLink />
 

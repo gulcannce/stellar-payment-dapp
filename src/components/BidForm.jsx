@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { getSavedDisplayName, saveDisplayName } from "../lib/displayName";
+import { NameField } from "./NameField";
 
 export function BidForm({ minNextBid, disabled, submitting, onBid }) {
   const [bidderName, setBidderName] = useState(getSavedDisplayName());
@@ -19,17 +20,7 @@ export function BidForm({ minNextBid, disabled, submitting, onBid }) {
 
   return (
     <form className="bid-form" onSubmit={handleSubmit}>
-      <label>
-        Adın
-        <input
-          type="text"
-          placeholder="Ayşe Yılmaz"
-          value={bidderName}
-          onChange={(e) => setBidderName(e.target.value)}
-          required
-          disabled={disabled}
-        />
-      </label>
+      <NameField name={bidderName} onChange={setBidderName} disabled={disabled} />
       <label>
         Teklifin (XLM) — en az {minNextBid.toFixed(2)} XLM
         <input

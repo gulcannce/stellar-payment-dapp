@@ -11,6 +11,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 > **Update (26 Jul 2026):** the auction moved from a single-listing demo to a **real multi-listing marketplace** — anyone can list their own item, and any number of auctions run concurrently side by side (`contracts/auction` v5). This required a small breaking change to `contracts/registry` (v2) too — see [Smart Contracts](#-smart-contracts) below for details and the historical v1–v4/v1 addresses kept live as prior-level proof.
 >
 > **Update (26 Jul 2026, later same day):** sellers and bidders now enter a real display name (`contracts/auction` v6) instead of showing a raw wallet address on each listing card — closer to how a real auction site (eBay, etc.) identifies participants. The name is remembered in the browser (`localStorage`) so returning users don't retype it.
+>
+> **Update (26 Jul 2026, UI simplification):** the single long scrolling page (invoice form + list, auction form + list, payment form, all visible at once) was split into three tabs — **🔨 Açık Artırma**, **🧾 Faturalar**, **💸 Ödeme** — so a first-time tester sees one feature at a time instead of everything at once. The auction listing form also got lighter: description is now collapsed behind a "+ Açıklama ekle" toggle, duration is a preset dropdown (24h / 3 days / 7 days) instead of typing hours, and the "your name" field only shows an editable input the first time — after that it's a one-line "X olarak işlem yapıyorsun · değiştir" instead of another required box to fill in.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
 

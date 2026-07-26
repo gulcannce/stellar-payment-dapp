@@ -8,36 +8,40 @@ describe("AuctionForm", () => {
     window.localStorage.clear();
   });
 
-  it("renders all input labels", () => {
+  it("renders the core input labels, with description collapsed behind a toggle", () => {
     render(<AuctionForm disabled={false} submitting={false} onCreate={vi.fn()} />);
     expect(screen.getByLabelText(/^adın/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/ürün adı/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/açıklama/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/taban teklif/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/süre/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^süre/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/açıklama/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /açıklama ekle/i })).toBeInTheDocument();
   });
 
-  it("calls onCreate with the entered values on valid submit", async () => {
+  it("reveals the description field when its toggle is clicked", async () => {
+    const user = userEvent.setup();
+    render(<AuctionForm disabled={false} submitting={false} onCreate={vi.fn()} />);
+
+    await user.click(screen.getByRole("button", { name: /açıklama ekle/i }));
+
+    expect(screen.getByLabelText(/açıklama/i)).toBeInTheDocument();
+  });
+
+  it("defaults the duration to 24 hours and calls onCreate with the entered values on valid submit", async () => {
     const user = userEvent.setup();
     const onCreate = vi.fn().mockResolvedValue("some-hash");
 
     render(<AuctionForm disabled={false} submitting={false} onCreate={onCreate} />);
 
+    expect(screen.getByLabelText(/^süre/i)).toHaveValue("24");
+
     await user.type(screen.getByLabelText(/^adın/i), "Ayşe Yılmaz");
     await user.type(screen.getByLabelText(/ürün adı/i), "Vintage Kamera");
-    await user.type(screen.getByLabelText(/açıklama/i), "35mm film makinesi");
     await user.type(screen.getByLabelText(/taban teklif/i), "100");
-    await user.clear(screen.getByLabelText(/süre/i));
-    await user.type(screen.getByLabelText(/süre/i), "48");
+    await user.selectOptions(screen.getByLabelText(/^süre/i), "72");
     await user.click(screen.getByRole("button", { name: /açık artırma oluştur/i }));
 
-    expect(onCreate).toHaveBeenCalledWith(
-      "Ayşe Yılmaz",
-      "Vintage Kamera",
-      "35mm film makinesi",
-      "100",
-      48 * 3600
-    );
+    expect(onCreate).toHaveBeenCalledWith("Ayşe Yılmaz", "Vintage Kamera", "", "100", 72 * 3600);
   });
 
   it("remembers the entered name for the next auction via localStorage", async () => {
@@ -86,7 +90,8 @@ describe("AuctionForm", () => {
     render(<AuctionForm disabled={true} submitting={false} onCreate={vi.fn()} />);
     expect(screen.getByLabelText(/^adın/i)).toBeDisabled();
     expect(screen.getByLabelText(/ürün adı/i)).toBeDisabled();
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /açıklama ekle/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /açık artırma oluştur/i })).toBeDisabled();
   });
 
   it("shows a submitting label and disables the button while submitting", () => {
