@@ -1,10 +1,13 @@
 import { shortAddress } from "../lib/format";
+import { useLanguage } from "../lib/i18n";
 
 export function WalletConnectButton({ address, connecting, onConnect, onDisconnect }) {
+  const { t } = useLanguage();
+
   if (!address) {
     return (
       <button className="btn primary big" onClick={onConnect} disabled={connecting}>
-        {connecting ? "Bağlanıyor..." : "🔗 Cüzdan Bağla"}
+        {connecting ? t("wallet.connecting") : t("wallet.connect")}
       </button>
     );
   }
@@ -12,13 +15,13 @@ export function WalletConnectButton({ address, connecting, onConnect, onDisconne
   return (
     <div className="row">
       <div>
-        <span className="label">Bağlı Cüzdan</span>
+        <span className="label">{t("wallet.connectedLabel")}</span>
         <p className="mono" title={address}>
           {shortAddress(address)}
         </p>
       </div>
       <button className="btn secondary" onClick={onDisconnect}>
-        Bağlantıyı Kes
+        {t("wallet.disconnect")}
       </button>
     </div>
   );

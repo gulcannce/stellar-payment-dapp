@@ -10,6 +10,7 @@ import {
 } from "../lib/contractClient";
 import { CONTRACT_ID, STROOPS_PER_XLM } from "../lib/config";
 import { classifyError, assertSufficientBalance, ERROR_TYPES } from "../lib/errors";
+import { t } from "../lib/i18n";
 
 // Cüzdan bağlı değilken bile açık artırmaları listeleyebilmek için kullanılan,
 // testnet'te fonlanmış salt-okunur bir hesap (gezinme herkese açık, tıpkı bir
@@ -59,10 +60,10 @@ export function useAuctionContract({ address, signTransaction }) {
 
   const createAuction = useCallback(
     async (sellerName, itemName, description, minBidXlm, durationSecs) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         const minBidStroops = Math.round(Number(minBidXlm) * STROOPS_PER_XLM);
         const { hash } = await invokeWithAuth({
@@ -80,7 +81,7 @@ export function useAuctionContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Açık artırma oluşturuldu! 🔨", hash });
+        setTxStatus({ phase: "success", message: t("auction.createdSuccess"), hash });
         await refresh();
         return hash;
       } catch (err) {
@@ -94,10 +95,10 @@ export function useAuctionContract({ address, signTransaction }) {
 
   const bid = useCallback(
     async (id, amountXlm, bidderName, balanceXlm) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         assertSufficientBalance(balanceXlm, amountXlm);
 
@@ -115,7 +116,7 @@ export function useAuctionContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Teklif başarıyla kabul edildi! 🎉", hash });
+        setTxStatus({ phase: "success", message: t("auction.bidSuccess"), hash });
         await refresh();
         return hash;
       } catch (err) {
@@ -132,10 +133,10 @@ export function useAuctionContract({ address, signTransaction }) {
   // iletişim) sonucu bildirir.
   const finalize = useCallback(
     async (id) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
 
         const { hash } = await invokeWithAuth({
@@ -146,7 +147,7 @@ export function useAuctionContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Açık artırma sonuçlandırıldı! 🏁", hash });
+        setTxStatus({ phase: "success", message: t("auction.finalizeSuccess"), hash });
         await refresh();
         return hash;
       } catch (err) {

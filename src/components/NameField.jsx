@@ -1,17 +1,21 @@
 import { useState } from "react";
+import { useLanguage } from "../lib/i18n";
 
 // İsim daha önce kaydedilmişse (bkz. lib/displayName) her formda yeniden
 // doldurulması gereken bir input yerine tek satırlık bir "değiştir" bağlantısı
 // gösterir — kullanıcı her teklif/ilanda aynı zorunlu alanı tekrar görmesin.
 export function NameField({ name, onChange, disabled }) {
+  const { t } = useLanguage();
   const [editing, setEditing] = useState(!name);
 
   if (!editing) {
     return (
       <p className="small-text hint name-display">
-        👤 <strong>{name}</strong> olarak işlem yapıyorsun ·{" "}
+        👤 {t("nameField.actingAsBefore")}
+        <strong>{name}</strong>
+        {t("nameField.actingAsAfter")} ·{" "}
         <button type="button" className="link-button" onClick={() => setEditing(true)} disabled={disabled}>
-          değiştir
+          {t("nameField.change")}
         </button>
       </p>
     );
@@ -19,10 +23,10 @@ export function NameField({ name, onChange, disabled }) {
 
   return (
     <label>
-      Adın
+      {t("nameField.label")}
       <input
         type="text"
-        placeholder="Ayşe Yılmaz"
+        placeholder={t("nameField.placeholder")}
         value={name}
         onChange={(e) => onChange(e.target.value)}
         required

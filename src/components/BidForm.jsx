@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { getSavedDisplayName, saveDisplayName } from "../lib/displayName";
+import { useLanguage } from "../lib/i18n";
 import { NameField } from "./NameField";
 
 export function BidForm({ minNextBid, disabled, submitting, onBid }) {
+  const { t } = useLanguage();
   const [bidderName, setBidderName] = useState(getSavedDisplayName());
   const [amount, setAmount] = useState("");
 
@@ -22,7 +24,7 @@ export function BidForm({ minNextBid, disabled, submitting, onBid }) {
     <form className="bid-form" onSubmit={handleSubmit}>
       <NameField name={bidderName} onChange={setBidderName} disabled={disabled} />
       <label>
-        Teklifin (XLM) — en az {minNextBid.toFixed(2)} XLM
+        {t("bid.amountLabel", { min: minNextBid.toFixed(2) })}
         <input
           type="number"
           step="0.0000001"
@@ -35,7 +37,7 @@ export function BidForm({ minNextBid, disabled, submitting, onBid }) {
         />
       </label>
       <button className="btn primary" type="submit" disabled={disabled || submitting}>
-        {submitting ? "Teklif gönderiliyor..." : "🔨 Teklif Ver"}
+        {submitting ? t("bid.submitting") : t("bid.submitButton")}
       </button>
     </form>
   );

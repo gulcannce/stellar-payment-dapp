@@ -11,6 +11,7 @@ import {
 } from "../lib/invoiceContractClient";
 import { STROOPS_PER_XLM } from "../lib/config";
 import { classifyError, assertSufficientBalance, ERROR_TYPES } from "../lib/errors";
+import { t } from "../lib/i18n";
 
 function statusToString(status) {
   // Veri taşımayan contracttype enum'ları (Draft/Sent/...) scValToNative
@@ -66,10 +67,10 @@ export function useInvoiceContract({ address, signTransaction }) {
 
   const createInvoice = useCallback(
     async (payerAddress, amountXlm, dueDateTimestamp, memo) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         const amountStroops = Math.round(Number(amountXlm) * STROOPS_PER_XLM);
         const { hash } = await invokeWithAuth({
@@ -86,7 +87,7 @@ export function useInvoiceContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Fatura oluşturuldu! 🧾", hash });
+        setTxStatus({ phase: "success", message: t("invoice.createdSuccess"), hash });
         track("invoice_created");
         await refresh();
         return hash;
@@ -101,10 +102,10 @@ export function useInvoiceContract({ address, signTransaction }) {
 
   const sendInvoice = useCallback(
     async (id) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         const { hash } = await invokeWithAuth({
           method: "send_invoice",
@@ -114,7 +115,7 @@ export function useInvoiceContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Fatura gönderildi. 📤", hash });
+        setTxStatus({ phase: "success", message: t("invoice.sentSuccess"), hash });
         await refresh();
         return hash;
       } catch (err) {
@@ -128,10 +129,10 @@ export function useInvoiceContract({ address, signTransaction }) {
 
   const payInvoice = useCallback(
     async (id, amountXlm, balanceXlm) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         assertSufficientBalance(balanceXlm, amountXlm);
 
@@ -143,7 +144,7 @@ export function useInvoiceContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Fatura ödendi! ✅", hash });
+        setTxStatus({ phase: "success", message: t("invoice.paidSuccess"), hash });
         track("invoice_paid");
         await refresh();
         return hash;
@@ -158,10 +159,10 @@ export function useInvoiceContract({ address, signTransaction }) {
 
   const cancelInvoice = useCallback(
     async (id) => {
-      setTxStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setTxStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         if (!address) {
-          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: "Önce bir cüzdan bağla." };
+          throw { type: ERROR_TYPES.WALLET_NOT_FOUND, message: t("error.connectWalletFirst") };
         }
         const { hash } = await invokeWithAuth({
           method: "cancel_invoice",
@@ -171,7 +172,7 @@ export function useInvoiceContract({ address, signTransaction }) {
           onStatus: (s) => setTxStatus({ phase: s.phase, message: s.message, hash: s.hash }),
         });
 
-        setTxStatus({ phase: "success", message: "Fatura iptal edildi.", hash });
+        setTxStatus({ phase: "success", message: t("invoice.cancelledSuccess"), hash });
         await refresh();
         return hash;
       } catch (err) {

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useLanguage } from "../lib/i18n";
 
 export function InvoiceForm({ disabled, submitting, onCreate }) {
+  const { t } = useLanguage();
   const [payer, setPayer] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -24,7 +26,7 @@ export function InvoiceForm({ disabled, submitting, onCreate }) {
   return (
     <form className="invoice-form" onSubmit={handleSubmit}>
       <label>
-        Ödeyecek Kişinin Adresi
+        {t("invoice.payerLabel")}
         <input
           type="text"
           placeholder="G..."
@@ -35,7 +37,7 @@ export function InvoiceForm({ disabled, submitting, onCreate }) {
         />
       </label>
       <label>
-        Tutar (XLM)
+        {t("invoice.amountLabel")}
         <input
           type="number"
           step="0.0000001"
@@ -48,7 +50,7 @@ export function InvoiceForm({ disabled, submitting, onCreate }) {
         />
       </label>
       <label>
-        Son Ödeme Tarihi
+        {t("invoice.dueDateLabel")}
         <input
           type="date"
           value={dueDate}
@@ -58,17 +60,17 @@ export function InvoiceForm({ disabled, submitting, onCreate }) {
         />
       </label>
       <label>
-        Açıklama (opsiyonel)
+        {t("invoice.memoLabel")}
         <input
           type="text"
-          placeholder="Web sitesi tasarımı"
+          placeholder={t("invoice.memoPlaceholder")}
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
           disabled={disabled}
         />
       </label>
       <button className="btn primary" type="submit" disabled={disabled || submitting}>
-        {submitting ? "Fatura oluşturuluyor..." : "🧾 Fatura Oluştur"}
+        {submitting ? t("invoice.submitting") : t("invoice.submitButton")}
       </button>
     </form>
   );

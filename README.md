@@ -13,6 +13,8 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 > **Update (26 Jul 2026, later same day):** sellers and bidders now enter a real display name (`contracts/auction` v6) instead of showing a raw wallet address on each listing card — closer to how a real auction site (eBay, etc.) identifies participants. The name is remembered in the browser (`localStorage`) so returning users don't retype it.
 >
 > **Update (26 Jul 2026, UI simplification):** the single long scrolling page (invoice form + list, auction form + list, payment form, all visible at once) was split into three tabs — **🔨 Açık Artırma**, **🧾 Faturalar**, **💸 Ödeme** — so a first-time tester sees one feature at a time instead of everything at once. The auction listing form also got lighter: description is now collapsed behind a "+ Açıklama ekle" toggle, duration is a preset dropdown (24h / 3 days / 7 days) instead of typing hours, and the "your name" field only shows an editable input the first time — after that it's a one-line "X olarak işlem yapıyorsun · değiştir" instead of another required box to fill in.
+>
+> **Update (26 Jul 2026, bilingual TR/EN support):** the entire UI — every label, button, hint, status/error message, and date format — is now available in both Turkish and English via a **TR / EN** toggle in the top-right corner. The app defaults to Turkish (its original audience) but switches instantly, with the choice remembered across visits (`localStorage`). This was added specifically so non-Turkish-speaking reviewers/testers (this is an international program) aren't blocked by the language.
 
 🌐 **Live Demo (Level 4, Vercel):** https://stellar-payment-dapp-beta.vercel.app
 
@@ -96,6 +98,7 @@ A Stellar Testnet dApp built for the Rise In "Stellar Journey to Mastery" challe
 - [`soroban-sdk`](https://crates.io/crates/soroban-sdk) 26 (Rust) — the auction, registry, and invoice smart contracts
 - [`@vercel/analytics`](https://www.npmjs.com/package/@vercel/analytics) — basic page-view monitoring (Level 4); custom event tracking is wired but inactive on the free plan (see note below)
 - [Vitest](https://vitest.dev) + [Testing Library](https://testing-library.com) — frontend unit/component tests
+- Custom lightweight i18n (`src/lib/i18n.js`, no external dependency) — a flat TR/EN dictionary plus a `t()`/`useLanguage()` pair, persisted in `localStorage`
 - GitHub Actions — CI pipeline (lint, test, build on every push/PR)
 - Stellar **Testnet** (Horizon: `https://horizon-testnet.stellar.org`, RPC: `https://soroban-testnet.stellar.org`)
 - Deploy target: GitHub Pages (Levels 1–3) and Vercel (Level 4, for analytics)

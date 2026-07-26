@@ -10,6 +10,7 @@ import { useAuctionContract } from "./hooks/useAuctionContract";
 import { useAuctionEvents } from "./hooks/useAuctionEvents";
 import { useInvoiceContract } from "./hooks/useInvoiceContract";
 import { useInvoiceEvents } from "./hooks/useInvoiceEvents";
+import { useLanguage } from "./lib/i18n";
 
 import { WalletConnectButton } from "./components/WalletConnectButton";
 import { BalanceCard } from "./components/BalanceCard";
@@ -23,13 +24,13 @@ import { InvoiceForm } from "./components/InvoiceForm";
 import { InvoiceList } from "./components/InvoiceList";
 import { FeedbackLink } from "./components/FeedbackLink";
 
-const TABS = [
-  { key: "auction", label: "🔨 Açık Artırma" },
-  { key: "invoice", label: "🧾 Faturalar" },
-  { key: "payment", label: "💸 Ödeme" },
-];
-
 function App() {
+  const { lang, setLang, t } = useLanguage();
+  const TABS = [
+    { key: "auction", label: t("tabs.auction") },
+    { key: "invoice", label: t("tabs.invoice") },
+    { key: "payment", label: t("tabs.payment") },
+  ];
   const [activeTab, setActiveTab] = useState(TABS[0].key);
   const wallet = useWallet();
   const balanceHook = useBalance();
@@ -79,8 +80,24 @@ function App() {
   return (
     <div className="container">
       <header>
+        <div className="lang-switch">
+          <button
+            type="button"
+            className={`lang-btn ${lang === "tr" ? "active" : ""}`}
+            onClick={() => setLang("tr")}
+          >
+            TR
+          </button>
+          <button
+            type="button"
+            className={`lang-btn ${lang === "en" ? "active" : ""}`}
+            onClick={() => setLang("en")}
+          >
+            EN
+          </button>
+        </div>
         <h1>✨ GlowPay</h1>
-        <p className="subtitle">Stellar Testnet üzerinde fatura takibi ve açık artırma</p>
+        <p className="subtitle">{t("app.subtitle")}</p>
       </header>
 
       <div className="card">
@@ -118,7 +135,7 @@ function App() {
         <>
           {wallet.address && (
             <div className="card">
-              <h2>🔨 Açık Artırma Oluştur</h2>
+              <h2>{t("auction.createTitle")}</h2>
               <AuctionForm
                 disabled={!wallet.address}
                 submitting={auction.txStatus.phase === "pending"}
@@ -147,7 +164,7 @@ function App() {
           {wallet.address ? (
             <>
               <div className="card">
-                <h2>🧾 Fatura Oluştur</h2>
+                <h2>{t("invoice.createTitle")}</h2>
                 <InvoiceForm
                   disabled={!wallet.address}
                   submitting={invoices.txStatus.phase === "pending"}
@@ -170,7 +187,7 @@ function App() {
             </>
           ) : (
             <div className="card">
-              <p className="small-text hint">Faturalarını görmek ve oluşturmak için önce cüzdanını bağla.</p>
+              <p className="small-text hint">{t("invoice.connectHint")}</p>
             </div>
           )}
         </>
@@ -189,7 +206,7 @@ function App() {
             </>
           ) : (
             <div className="card">
-              <p className="small-text hint">Ödeme gönderebilmek için önce cüzdanını bağla.</p>
+              <p className="small-text hint">{t("payment.connectHint")}</p>
             </div>
           )}
         </>

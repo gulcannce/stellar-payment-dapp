@@ -1,6 +1,9 @@
+import { useLanguage } from "../lib/i18n";
 import { InvoiceCard } from "./InvoiceCard";
 
 export function InvoiceList({ invoices, loading, address, submitting, onSend, onPay, onCancel }) {
+  const { t } = useLanguage();
+
   if (!address) {
     return null;
   }
@@ -8,8 +11,8 @@ export function InvoiceList({ invoices, loading, address, submitting, onSend, on
   if (loading) {
     return (
       <div className="card">
-        <h2>🧾 Faturalarım</h2>
-        <p>Yükleniyor...</p>
+        <h2>{t("invoice.listTitle")}</h2>
+        <p>{t("common.loading")}</p>
       </div>
     );
   }
@@ -17,15 +20,15 @@ export function InvoiceList({ invoices, loading, address, submitting, onSend, on
   if (invoices.length === 0) {
     return (
       <div className="card">
-        <h2>🧾 Faturalarım</h2>
-        <p className="small-text hint">Henüz bir faturan yok. Yukarıdan ilk faturanı oluştur!</p>
+        <h2>{t("invoice.listTitle")}</h2>
+        <p className="small-text hint">{t("invoice.emptyHint")}</p>
       </div>
     );
   }
 
   return (
     <div className="invoice-list">
-      <h2>🧾 Faturalarım</h2>
+      <h2>{t("invoice.listTitle")}</h2>
       {invoices.map((invoice) => (
         <InvoiceCard
           key={invoice.id}

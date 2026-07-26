@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { getSavedDisplayName, saveDisplayName } from "../lib/displayName";
+import { useLanguage } from "../lib/i18n";
 import { NameField } from "./NameField";
 
-const DURATION_PRESETS = [
-  { label: "24 saat", hours: 24 },
-  { label: "3 gün", hours: 72 },
-  { label: "7 gün", hours: 168 },
-];
-
 export function AuctionForm({ disabled, submitting, onCreate }) {
+  const { t } = useLanguage();
+  const DURATION_PRESETS = [
+    { label: t("auction.duration24h"), hours: 24 },
+    { label: t("auction.duration3d"), hours: 72 },
+    { label: t("auction.duration7d"), hours: 168 },
+  ];
   const [sellerName, setSellerName] = useState(getSavedDisplayName());
   const [itemName, setItemName] = useState("");
   const [showDescription, setShowDescription] = useState(false);
@@ -37,10 +38,10 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
     <form className="auction-form" onSubmit={handleSubmit}>
       <NameField name={sellerName} onChange={setSellerName} disabled={disabled} />
       <label>
-        Ürün Adı
+        {t("auction.itemNameLabel")}
         <input
           type="text"
-          placeholder="Vintage Fotoğraf Makinesi"
+          placeholder={t("auction.itemNamePlaceholder")}
           value={itemName}
           onChange={(e) => setItemName(e.target.value)}
           required
@@ -49,10 +50,10 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
       </label>
       {showDescription ? (
         <label>
-          Açıklama (opsiyonel)
+          {t("auction.descriptionLabel")}
           <input
             type="text"
-            placeholder="35mm film makinesi, çalışır durumda"
+            placeholder={t("auction.descriptionPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={disabled}
@@ -60,11 +61,11 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
         </label>
       ) : (
         <button type="button" className="link-button" onClick={() => setShowDescription(true)} disabled={disabled}>
-          + Açıklama ekle (opsiyonel)
+          {t("auction.addDescriptionToggle")}
         </button>
       )}
       <label>
-        Taban Teklif (XLM)
+        {t("auction.minBidLabel")}
         <input
           type="number"
           step="0.0000001"
@@ -77,7 +78,7 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
         />
       </label>
       <label>
-        Süre
+        {t("auction.durationLabel")}
         <select
           value={durationHours}
           onChange={(e) => setDurationHours(Number(e.target.value))}
@@ -91,7 +92,7 @@ export function AuctionForm({ disabled, submitting, onCreate }) {
         </select>
       </label>
       <button className="btn primary" type="submit" disabled={disabled || submitting}>
-        {submitting ? "Açık artırma oluşturuluyor..." : "🔨 Açık Artırma Oluştur"}
+        {submitting ? t("auction.submitting") : t("auction.submitButton")}
       </button>
     </form>
   );

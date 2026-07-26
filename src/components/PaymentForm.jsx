@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useLanguage } from "../lib/i18n";
 
 export function PaymentForm({ onSend, loading }) {
+  const { t } = useLanguage();
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -17,9 +19,9 @@ export function PaymentForm({ onSend, loading }) {
 
   return (
     <form className="card" onSubmit={handleSubmit}>
-      <h2>💸 XLM Gönder</h2>
+      <h2>{t("payment.title")}</h2>
       <label>
-        Alıcı Adresi
+        {t("payment.destinationLabel")}
         <input
           type="text"
           placeholder="G..."
@@ -29,7 +31,7 @@ export function PaymentForm({ onSend, loading }) {
         />
       </label>
       <label>
-        Miktar (XLM)
+        {t("payment.amountLabel")}
         <input
           type="number"
           step="0.0000001"
@@ -41,7 +43,7 @@ export function PaymentForm({ onSend, loading }) {
         />
       </label>
       <button className="btn primary" type="submit" disabled={loading}>
-        {loading ? "Gönderiliyor..." : "Gönder"}
+        {loading ? t("common.sending") : t("payment.sendButton")}
       </button>
     </form>
   );

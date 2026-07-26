@@ -140,6 +140,31 @@ select:focus {
   margin: 0;
 }
 
+.lang-switch {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.lang-btn {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #cfd3ec;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.lang-btn.active {
+  background: linear-gradient(90deg, #6ea8fe, #7ee8fa);
+  color: #0b1030;
+  border-color: transparent;
+}
+
 .tabs {
   display: flex;
   gap: 8px;

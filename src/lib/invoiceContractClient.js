@@ -1,5 +1,6 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { RPC_URL, NETWORK_PASSPHRASE, INVOICE_CONTRACT_ID } from "./config";
+import { t } from "./i18n";
 
 // contracts/invoice (Level 4) için contractClient.js'in birebir kopyası —
 // tek fark CONTRACT_ID yerine INVOICE_CONTRACT_ID kullanılması. Çalışan
@@ -36,7 +37,7 @@ export async function readContract(method, scArgs, readSourcePublicKey) {
 }
 
 export async function invokeWithAuth({ method, scArgs, sourcePublicKey, signTransaction, onStatus }) {
-  onStatus?.({ phase: "building", message: "İşlem hazırlanıyor..." });
+  onStatus?.({ phase: "building", message: t("tx.preparing") });
   const account = await rpcServer.getAccount(sourcePublicKey);
   const contract = new Contract(INVOICE_CONTRACT_ID);
   const tx = new TransactionBuilder(account, {
@@ -49,26 +50,26 @@ export async function invokeWithAuth({ method, scArgs, sourcePublicKey, signTran
 
   const prepared = await rpcServer.prepareTransaction(tx);
 
-  onStatus?.({ phase: "awaiting-signature", message: "Cüzdanda işlemi onayla..." });
+  onStatus?.({ phase: "awaiting-signature", message: t("tx.awaitingSignature") });
   const signedXdr = await signTransaction(prepared.toXDR());
 
-  onStatus?.({ phase: "pending", message: "İşlem ağa gönderiliyor..." });
+  onStatus?.({ phase: "pending", message: t("tx.submitting") });
   const signedTx = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
   const sendResult = await rpcServer.sendTransaction(signedTx);
 
   if (sendResult.status !== "PENDING") {
-    throw new Error(`İşlem gönderilemedi: ${sendResult.status}`);
+    throw new Error(t("tx.submitFailed", { status: sendResult.status }));
   }
 
   onStatus?.({
     phase: "pending",
-    message: "İşlem ledger'a işleniyor, onay bekleniyor...",
+    message: t("tx.confirming"),
     hash: sendResult.hash,
   });
 
   const result = await rpcServer.pollTransaction(sendResult.hash);
   if (result.status !== "SUCCESS") {
-    throw new Error(`İşlem başarısız oldu: ${result.status}`);
+    throw new Error(t("tx.txFailed", { status: result.status }));
   }
 
   return { hash: sendResult.hash, result };

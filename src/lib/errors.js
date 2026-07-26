@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 // Level 2 gereksinimi: en az 3 ayrı hata türü net biçimde sınıflandırılmalı.
 export const ERROR_TYPES = {
   WALLET_NOT_FOUND: "wallet-not-found",
@@ -51,27 +53,27 @@ export function classifyError(err) {
   if (NOT_FOUND_HINTS.some((hint) => lower.includes(hint))) {
     return {
       type: ERROR_TYPES.WALLET_NOT_FOUND,
-      message: "Cüzdan bulunamadı. Seçtiğin cüzdanın tarayıcında kurulu ve bağlı olduğundan emin ol.",
+      message: t("error.walletNotFound"),
     };
   }
 
   if (REJECTED_HINTS.some((hint) => lower.includes(hint))) {
     return {
       type: ERROR_TYPES.REJECTED,
-      message: "İşlem cüzdanda reddedildi.",
+      message: t("error.rejected"),
     };
   }
 
   if (INSUFFICIENT_BALANCE_HINTS.some((hint) => lower.includes(hint))) {
     return {
       type: ERROR_TYPES.INSUFFICIENT_BALANCE,
-      message: "Yetersiz bakiye. Testnet'te Friendbot ile fonlaman gerekebilir.",
+      message: t("error.insufficientBalance"),
     };
   }
 
   return {
     type: ERROR_TYPES.UNKNOWN,
-    message: message || "Bilinmeyen bir hata oluştu.",
+    message: message || t("error.unknown"),
   };
 }
 
@@ -86,9 +88,12 @@ export function assertSufficientBalance(balanceXlm, amountXlm, { bufferXlm = 1.5
   if (amount + bufferXlm > balance) {
     throw {
       type: ERROR_TYPES.INSUFFICIENT_BALANCE,
-      message: `Yetersiz bakiye: ${amount} XLM göndermek için (+${bufferXlm} XLM ücret/rezerv payı) en az ${(
-        amount + bufferXlm
-      ).toFixed(2)} XLM gerekli, mevcut bakiye ${balance.toFixed(2)} XLM.`,
+      message: t("error.insufficientBalanceDetailed", {
+        amount,
+        buffer: bufferXlm,
+        required: (amount + bufferXlm).toFixed(2),
+        balance: balance.toFixed(2),
+      }),
     };
   }
 }

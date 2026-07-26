@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { HORIZON_URL, NETWORK_PASSPHRASE } from "../lib/config";
 import { classifyError, assertSufficientBalance } from "../lib/errors";
+import { t } from "../lib/i18n";
 
 const server = new StellarSdk.Horizon.Server(HORIZON_URL);
 
@@ -12,7 +13,7 @@ export function usePayment({ address, signTransaction, onSettled }) {
 
   const send = useCallback(
     async (destination, amount, balance) => {
-      setStatus({ phase: "pending", message: "İşlem hazırlanıyor..." });
+      setStatus({ phase: "pending", message: t("tx.preparing") });
       try {
         assertSufficientBalance(balance, amount);
 
@@ -31,15 +32,15 @@ export function usePayment({ address, signTransaction, onSettled }) {
           .setTimeout(60)
           .build();
 
-        setStatus({ phase: "pending", message: "Cüzdanda işlemi onayla..." });
+        setStatus({ phase: "pending", message: t("tx.awaitingSignature") });
         const signedXdr = await signTransaction(tx.toXDR());
 
-        setStatus({ phase: "pending", message: "İşlem gönderiliyor..." });
+        setStatus({ phase: "pending", message: t("tx.submitting") });
         const result = await server.submitTransaction(
           StellarSdk.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
         );
 
-        setStatus({ phase: "success", message: "İşlem başarılı! 🎉", hash: result.hash });
+        setStatus({ phase: "success", message: t("payment.success"), hash: result.hash });
         await onSettled?.();
         return result.hash;
       } catch (err) {
